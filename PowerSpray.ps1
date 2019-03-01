@@ -73,7 +73,7 @@ function PowerSpray {
     }
 
     if ($PSBoundParameters.ContainsKey('PasswordList')) {
-        $PasswordList = -split $PasswordList
+        $PasswordList = $PasswordList -split ','
     } else {
         $PasswordList = @()
         $MonthList = @((Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month-1), (Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month), (Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month+1))
