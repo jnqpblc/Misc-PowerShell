@@ -66,8 +66,10 @@ function PowerSpray {
     } else {
         $UserCount = ($UserList).Count
         Write-Host "[+] Successfully collected $UserCount usernames from Active Directory."
-        Write-Host "[*] The Lockout Threshold for the current domain is $($objPDC.lockoutThreshold)."
-        Write-Host "[*] The Min Password Length for the current domain is $($objPDC.minPwdLength)."
+	$lockoutThreshold = [int]$objPDC.lockoutThreshold
+        Write-Host "[*] The Lockout Threshold for the current domain is $lockoutThreshold."
+	$minPwdLength = [int]$objPDC.minPwdLength
+        Write-Host "[*] The Min Password Length for the current domain is $minPwdLength."
     }
 
     if ($PSBoundParameters.ContainsKey('PasswordList')) {
@@ -81,11 +83,12 @@ function PowerSpray {
             foreach ($Item in $AppendList)
             { 
                 $Candidate = $Month + $Item
-                if ($Candidate.length -ge $objPDC.minPwdLength) {
+                if ($Candidate.length -ge $minPwdLength) {
                     $PasswordList += $Candidate
                 }
             }
         }
+	Write-Host "[+] Successfully generated a list of ($PasswordList).Count passwords."
     }
 
     Write-Host "[*] Starting password spraying operations."
