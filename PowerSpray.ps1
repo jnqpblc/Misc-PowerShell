@@ -110,7 +110,7 @@ function PowerSpray {
                 Write-Host "[+] Successfully authenticated with $UserName::$Password"
             }
             
-            if ($PSBoundParameters.ContainsKey('Sleep')) {
+            if ($PSBoundParameters.ContainsKey('Delay')) {
                 Start-Sleep -Milliseconds $Delay
             } else {
                 Start-Sleep -Milliseconds 1000
