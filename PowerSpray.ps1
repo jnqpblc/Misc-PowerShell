@@ -73,7 +73,7 @@ function PowerSpray {
     }
 
     if ($PSBoundParameters.ContainsKey('PasswordList')) {
-        $PasswordList = $PasswordList -split ','
+        $PasswordList = $PasswordList -split ',' -join "`r`n"
     } else {
         $PasswordList = @()
         $MonthList = @((Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month-1), (Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month), (Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month+1))
@@ -82,7 +82,7 @@ function PowerSpray {
         {
             foreach ($Item in $AppendList)
             { 
-                $Candidate = $Month + $Item
+                $Candidate = $Month + $Item + "`r`n"
                 if ($Candidate.length -ge $minPwdLength) {
                     $PasswordList += $Candidate
                 }
