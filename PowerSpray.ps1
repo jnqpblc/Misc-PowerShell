@@ -81,7 +81,7 @@ function PowerSpray {
             foreach ($Item in $AppendList)
             { 
                 $Candidate = $Month + $Item
-                if ($Candidate.length -ge 10) {
+                if ($Candidate.length -ge $objPDC.minPwdLength) {
                     $PasswordList += $Candidate
                 }
             }
