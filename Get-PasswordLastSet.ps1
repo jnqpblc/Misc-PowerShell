@@ -31,14 +31,19 @@ function Get-PasswordLastSet
     #> 
 
     param (
-	    [parameter(Mandatory=$true, HelpMessage="SAMAccountName for user")]
-      $SAMAccountName
+        [parameter(Mandatory=$true, HelpMessage="SAMAccountName is needed for the user specific information pulled from Active Directory.")]
+        [string]$SAMAccountName
     )
 
-    $root = [ADSI]''
-    $searcher = new-object System.DirectoryServices.DirectorySearcher($root)
-    $searcher.filter = "(&(objectClass=user)(sAMAccountName=$SAMAccountName))"
-    $user = $searcher.findall()
+    Try {
+        $root = [ADSI]''
+        $searcher = New-Object System.DirectoryServices.DirectorySearcher($root)
+        $searcher.filter = "(&(objectClass=user)(sAMAccountName=$SAMAccountName))"
+        $user = $searcher.findall()
+     } Catch {
+        Write-Output "[-] Failed to find or connect to Active Directory; the script will exit."
+        Break
+    } 
 
     $User = [ADSI]$user[0].path
 
@@ -104,18 +109,18 @@ function Get-PasswordLastSet
         }
     }
 
-    Write-Host "Last password set date and time: `t`t`t $PwdLastSet"
-    Write-Host "Password expiration setting: `t`t`t $blnPwdExpires"
-    Write-Host "Password expiration status: `t`t`t $blnExpired"
-    Write-Host "Force user logoff how long after time expires?: `t $ForceLogoff"
-    Write-Host "Minimum password age (days): `t`t`t $MinPwdAge"
-    Write-Host "Maximum password age (days): `t`t`t $MaxPwdAge"
-    Write-Host "Minimum password length: `t`t`t`t $MinPwdLength"
-    Write-Host "Password complexity requirement: `t`t`t $PwdComplexity"
-    Write-Host "Length of password history maintained: `t`t $PwdHistory"
-    Write-Host "Lockout threshold: `t`t`t`t $LockoutThreshold"
-    Write-Host "Lockout duration (minutes): `t`t`t $LockoutDuration"
-    Write-Host "Lockout observation window (minutes): `t`t $LockoutWindow"
-    Write-Host "The command completed successfully."
+    Write-Output "Last password set date and time: `t`t`t $PwdLastSet"
+    Write-Output "Password expiration setting: `t`t`t $blnPwdExpires"
+    Write-Output "Password expiration status: `t`t`t $blnExpired"
+    Write-Output "Force user logoff how long after time expires?: `t $ForceLogoff"
+    Write-Output "Minimum password age (days): `t`t`t $MinPwdAge"
+    Write-Output "Maximum password age (days): `t`t`t $MaxPwdAge"
+    Write-Output "Minimum password length: `t`t`t`t $MinPwdLength"
+    Write-Output "Password complexity requirement: `t`t`t $PwdComplexity"
+    Write-Output "Length of password history maintained: `t`t $PwdHistory"
+    Write-Output "Lockout threshold: `t`t`t`t $LockoutThreshold"
+    Write-Output "Lockout duration (minutes): `t`t`t $LockoutDuration"
+    Write-Output "Lockout observation window (minutes): `t`t $LockoutWindow"
+    Write-Output "The command completed successfully."
 
 }
