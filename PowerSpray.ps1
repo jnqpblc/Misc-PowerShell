@@ -36,12 +36,12 @@ function PowerSpray {
     #> 
 
     param (
-	    [parameter(Mandatory=$false, HelpMessage="A comma-separated list of passwords to use instead of the default list.")]
-      [string]$PasswordList
-      [parameter(Mandatory=$false, HelpMessage="The delay time between guesses in millisecounds.")]
-      [int]$Delay
-      [parameter(Mandatory=$false, HelpMessage="The number of minutes to sleep between password cycles.")]
-      [int]$Sleep
+    	[parameter(Mandatory=$false, HelpMessage="A comma-separated list of passwords to use instead of the default list.")]
+	[string]$PasswordList
+	[parameter(Mandatory=$false, HelpMessage="The delay time between guesses in millisecounds.")]
+	[int]$Delay
+	[parameter(Mandatory=$false, HelpMessage="The number of minutes to sleep between password cycles.")]
+	[int]$Sleep
     )
 
     $objPDC = [ADSI] "LDAP://$([System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PDCRoleOwner)";
