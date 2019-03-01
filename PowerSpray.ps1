@@ -25,8 +25,16 @@ function PowerSpray {
         
     .PARAMETER PasswordList
 
-        PasswordList is used to supply a comma seperate list of passwords to use instead of the default list.
-      
+        A comma-separated list of passwords to use instead of the default list.
+
+    .PARAMETER Delay
+
+        The delay time between guesses in millisecounds.
+
+    .PARAMETER Sleep
+    
+        The number of minutes to sleep between password cycles.
+
     .EXAMPLE
 
         PowerSpray
