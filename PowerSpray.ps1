@@ -60,11 +60,11 @@ function PowerSpray {
     $Searcher.SearchRoot = $objPDC;
     $UserList = $Searcher.FindAll().Properties.samaccountname
 
-    if (([string]::IsNullOrEmpty($UserFile))) {
+    if (([string]::IsNullOrEmpty($UserList))) {
         Write-Host "[-] Failed to retrieve the usernames from AD; the script will exit."
         exit
     } else {
-        $UserCount = ($UserFile).Count
+        $UserCount = ($UserList).Count
         Write-Host "[+] Successfully collected $UserCount usernames from Active Directory."
         Write-Host "[*] The Lockout Threshold for the current domain is $($objPDC.lockoutThreshold)."
         Write-Host "[*] The Min Password Length for the current domain is $($objPDC.minPwdLength)."
