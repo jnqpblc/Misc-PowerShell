@@ -88,7 +88,7 @@ function PowerSpray {
                 }
             }
         }
-	Write-Host "[+] Successfully generated a list of $($PasswordList).Count passwords."
+	Write-Host "[+] Successfully generated a list of $($PasswordList.Count) passwords."
     }
 
     Write-Host "[*] Starting password spraying operations."
