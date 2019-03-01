@@ -77,7 +77,7 @@ function PowerSpray {
     } else {
         $PasswordList = @()
         $MonthList = @((Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month-1), (Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month), (Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month+1))
-        $AppendList = @("18", "19", "18!", "19!", "1", "2", "3", "1!", "2!", "3!", "123", "1234", "123!", "1234!")
+        $AppendList = @("18", "19", "18!", "19!", "2018", "2019", "2018!", "2019!", "1", "2", "3", "1!", "2!", "3!", "123", "1234", "123!", "1234!")
         foreach ($Month in $MonthList)
         {
             foreach ($Item in $AppendList)
