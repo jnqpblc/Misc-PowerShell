@@ -19,26 +19,26 @@ function Get-PasswordLastSet
         https://elderec.org/2013/03/powershell-determine-when-active-directory-password-was-last-set/
         https://www.blackops.ca/2013/05/06/cant-change-password-the-password-does-not-meet-the-password-policy-requirements/
 
-    .PARAMETER SAMAccountName
+    .PARAMETER sAMAccountName
 
-	    SAMAccountName is needed for the user specific information pulled from Active Directory.
+	    sAMAccountName is needed for the user specific information pulled from Active Directory.
       
     .EXAMPLE
 
 	    Get-PasswordLastSet some.user
-	    Get-PasswordLastSet -SAMAccountName some.user
+	    Get-PasswordLastSet -sAMAccountName some.user
       
     #> 
 
     param (
-        [parameter(Mandatory=$true, HelpMessage="SAMAccountName is needed for the user specific information pulled from Active Directory.")]
-        [string]$SAMAccountName
+        [parameter(Mandatory=$true, HelpMessage="sAMAccountName is needed for the user specific information pulled from Active Directory.")]
+        [string]$sAMAccountName
     )
 
     Try {
         $root = [ADSI]''
         $searcher = New-Object System.DirectoryServices.DirectorySearcher($root)
-        $searcher.filter = "(&(objectClass=user)(sAMAccountName=$SAMAccountName))"
+        $searcher.filter = "(&(objectClass=user)(sAMAccountName=$sAMAccountName))"
         $user = $searcher.findall()
      } Catch {
         Write-Output "[-] Failed to find or connect to Active Directory; the script will exit."
