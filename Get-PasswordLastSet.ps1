@@ -14,6 +14,8 @@ function Get-PasswordLastSet
 
         Shows similar information to "net accounts /domain" from Windows.
 
+	PS C:\> IEX (New-Object Net.Webclient).downloadstring("https://raw.githubusercontent.com/jnqpblc/Misc-PowerShell/master/Get-PasswordLastSet.ps1"); PowerSpray
+
     .LINK
 
         https://elderec.org/2013/03/powershell-determine-when-active-directory-password-was-last-set/
