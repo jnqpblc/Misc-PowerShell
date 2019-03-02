@@ -115,18 +115,18 @@ function Get-PasswordLastSet
     }
 
     Write-Output "Last password set date and time: `t`t`t $PwdLastSet"
-    Write-Output "Current bad password count: `t`t`t $badPwdCount" 
-    Write-Output "Password expiration setting: `t`t`t $blnPwdExpires"
-    Write-Output "Password expiration status: `t`t`t $blnExpired"
+    Write-Output "Current bad password count: `t`t`t`t $badPwdCount" 
+    Write-Output "Password expiration setting: `t`t`t`t $blnPwdExpires"
+    Write-Output "Password expiration status: `t`t`t`t $blnExpired"
     Write-Output "Force user logoff how long after time expires?: `t $ForceLogoff"
-    Write-Output "Minimum password age (days): `t`t`t $MinPwdAge"
-    Write-Output "Maximum password age (days): `t`t`t $MaxPwdAge"
+    Write-Output "Minimum password age (days): `t`t`t`t $MinPwdAge"
+    Write-Output "Maximum password age (days): `t`t`t`t $MaxPwdAge"
     Write-Output "Minimum password length: `t`t`t`t $MinPwdLength"
     Write-Output "Password complexity requirement: `t`t`t $PwdComplexity"
-    Write-Output "Length of password history maintained: `t`t $PwdHistory"
-    Write-Output "Lockout threshold: `t`t`t`t $LockoutThreshold"
-    Write-Output "Lockout duration (minutes): `t`t`t $LockoutDuration"
-    Write-Output "Lockout observation window (minutes): `t`t $LockoutWindow"
+    Write-Output "Length of password history maintained: `t`t`t $PwdHistory"
+    Write-Output "Lockout threshold: `t`t`t`t`t $LockoutThreshold"
+    Write-Output "Lockout duration (minutes): `t`t`t`t $LockoutDuration"
+    Write-Output "Lockout observation window (minutes): `t`t`t $LockoutWindow"
     Write-Output "The command completed successfully."
 
 }
