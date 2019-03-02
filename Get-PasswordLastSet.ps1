@@ -14,7 +14,7 @@ function Get-PasswordLastSet
 
         Shows similar information to "net accounts /domain" from Windows.
 
-	PS C:\> IEX (New-Object Net.Webclient).downloadstring("https://raw.githubusercontent.com/jnqpblc/Misc-PowerShell/master/Get-PasswordLastSet.ps1"); PowerSpray
+	PS C:\> IEX (New-Object Net.Webclient).downloadstring("https://raw.githubusercontent.com/jnqpblc/Misc-PowerShell/master/Get-PasswordLastSet.ps1"); Get-PasswordLastSet
 
     .LINK
 
