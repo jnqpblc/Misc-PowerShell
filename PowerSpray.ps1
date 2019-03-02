@@ -1,4 +1,4 @@
- function PowerSpray {
+Function PowerSpray {
     <#
 
     .SYNOPSIS
