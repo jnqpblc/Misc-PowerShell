@@ -75,6 +75,9 @@ function Get-PasswordLastSet
     $LockoutDuration = -$lngLockoutDuration/(600000000)
     $LockoutWindow = -$lngLockoutWindow/(600000000)
 
+     # get bad password count
+    $badPwdCount = $User.badPwdCount.Value 
+
     # check if password can expire or not
     $UAC = $User.userAccountControl
     $blnPwdExpires = -not (($UAC.Item(0) -band 64) -or ($UAC.Item(0) -band 65536))
@@ -110,6 +113,7 @@ function Get-PasswordLastSet
     }
 
     Write-Output "Last password set date and time: `t`t`t $PwdLastSet"
+    Write-Output "Current bad password count: `t`t`t $badPwdCount" 
     Write-Output "Password expiration setting: `t`t`t $blnPwdExpires"
     Write-Output "Password expiration status: `t`t`t $blnExpired"
     Write-Output "Force user logoff how long after time expires?: `t $ForceLogoff"
