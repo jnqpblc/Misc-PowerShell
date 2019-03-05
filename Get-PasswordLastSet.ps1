@@ -23,15 +23,14 @@ function Get-PasswordLastSet
 
     .PARAMETER sAMAccountName
 
-	    sAMAccountName is needed for the user specific information pulled from Active Directory.
+	sAMAccountName is needed for the user specific information pulled from Active Directory.
       
     .EXAMPLE
 
-	    Get-PasswordLastSet some.user
-	    Get-PasswordLastSet -sAMAccountName some.user
+	Get-PasswordLastSet some.user
+	Get-PasswordLastSet -sAMAccountName some.user
       
     #> 
-
     param (
         [parameter(Mandatory=$true, HelpMessage="sAMAccountName is needed for the user specific information pulled from Active Directory.")]
         [string]$sAMAccountName
