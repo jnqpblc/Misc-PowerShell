@@ -20,26 +20,26 @@ function Get-Banner
 
     .PARAMETER Target
 
-	    Target is the IP Address or Hostname to connect too.
+	Target is the IP Address or Hostname to connect too.
       
     .PARAMETER Target
 
-	    Port is the TCP Port number to use.
+	Port is the TCP Port number to use.
       
     .EXAMPLE
 
-	    Get-Banner 10.10.10.10 22
-	    Get-Banner -Target 10.10.10.10 -Port 22
+	Get-Banner 10.10.10.10 22
+	Get-Banner -Target 10.10.10.10 -Port 22
       
-    #>  Param
-    (
+    #>
+    param (
       [Parameter(Mandatory=$true, Position=0, HelpMessage="Please enter an IP Address or Hostname to connect too.")]
       [string] $Target,
       [Parameter(Mandatory=$true, Position=1, HelpMessage="Please enter a TCP Port number to use.")]
       [int] $Port
     )
-  Try
-    {
+
+    Try {
       $Con = New-Object System.Net.Sockets.TcpClient($Target, $Port)
       $Str = $Con.GetStream()
       $Buf = New-Object System.Byte[] 1024
@@ -59,9 +59,7 @@ function Get-Banner
       } else {
         Write-Host "[+] $Out"
       }
-    }
-  Catch
-    {
+    } Catch {
       Write-Host "[!] Unable resolve or connect to host."
       Break
     }
