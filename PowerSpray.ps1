@@ -25,6 +25,12 @@
         https://social.technet.microsoft.com/wiki/contents/articles/4231.working-with-active-directory-using-powershell-adsi-adapter.aspx
 	https://www.trimarcsecurity.com/single-post/2018/05/06/Trimarc-Research-Detecting-Password-Spraying-with-Security-Event-Auditing
         https://blog.fox-it.com/2017/11/28/further-abusing-the-badpwdcount-attribute/
+	
+    .DETECTION
+    
+    	[DC01] PS C:\> Get-ADUser -LDAPFilter "(&(objectClass=User)(badPasswordTime=*))" -Prop lastbadpasswordattempt,badpwdcount | Select-Object name,lastbadpasswordattempt,badpwdcount | Sort-Object lastbadpasswordattempt,badpwdcount | format-table -auto                                        
+    	[DC01] PS C:\> $Date = (Get-Date).AddDays(-1); Get-WinEvent -FilterHashTable @{ LogName = "Security"; StartTime = $Date; ID = 4776 }
+    	https://www.trimarcsecurity.com/single-post/2018/05/06/Trimarc-Research-Detecting-Password-Spraying-with-Security-Event-Auditing
 
     .PARAMETER Passwords
 
