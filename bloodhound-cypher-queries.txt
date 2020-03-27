@@ -1,0 +1,20 @@
+# Unconstrained Delegation
+MATCH (c:Computer {unconstraineddelegation:true}) RETURN c.name,c.operatingsystem ORDER BY c.name ASC
+MATCH (c1:Computer)-[:MemberOf*1..]->(g:Group) WHERE g.objectsid ENDS WITH '-516' WITH COLLECT(c1.name) AS domainControllers MATCH (c2:Computer {unconstraineddelegation:true}) WHERE NOT c2.name IN domainControllers RETURN c2.name,c2.operatingsystem ORDER BY c2.name ASC
+
+# Operating System
+MATCH (c:Computer) WHERE NOT (toUpper(c.operatingsystem) STARTS WITH 'WINDOWS' OR toUpper(c.operatingsystem) STARTS WITH 'MAC') RETURN c.name, c.operatingsystem ORDER BY c.operatingsystem ASC
+MATCH (c:Computer) RETURN c.operatingsystem, COUNT(c.operatingsystem) ORDER BY COUNT(c.operatingsystem) DESC
+MATCH (c:Computer) WHERE c.operatingsystem =~ '(?i).*(2000|ME|XP|2003|VISTA).*' AND c.enabled=true RETURN c.operatingsystem, COUNT(c.operatingsystem) ORDER BY c.operatingsystem DESC
+MATCH (c:Computer) WHERE c.operatingsystem =~ '(?i).*(2000|ME|XP|2003|VISTA).*' AND c.enabled=true RETURN c.domain, c.operatingsystem, COUNT(c.operatingsystem) ORDER BY c.domain DESC
+MATCH (c:Computer) WHERE c.enabled=true RETURN c.domain, COUNT(c.domain) ORDER BY COUNT(c.domain) DESC
+MATCH (c:Computer) WHERE c.enabled=true RETURN c.domain, c.operatingsystem, COUNT(c.operatingsystem) ORDER BY COUNT(c.operatingsystem) DESC
+
+# Hunting Users
+
+# Hunting Data
+MATCH (u:User) RETURN u.homedirectory, COUNT(u.homedirectory) ORDER BY COUNT(u.homedirectory) DESC
+
+# Hunting Domains
+MATCH (d:Domain) RETURN d
+MATCH (d:Domain) RETURN d.name, d.functionallevel, d.objectsid ORDER BY d.name ASC
