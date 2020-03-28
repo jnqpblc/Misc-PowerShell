@@ -2,7 +2,7 @@
 MATCH (c:Computer {unconstraineddelegation:true}) RETURN c.name,c.operatingsystem ORDER BY c.name ASC
 MATCH (c1:Computer)-[:MemberOf*1..]->(g:Group) WHERE g.objectsid ENDS WITH '-516' WITH COLLECT(c1.name) AS domainControllers MATCH (c2:Computer {unconstraineddelegation:true}) WHERE NOT c2.name IN domainControllers RETURN c2.name,c2.operatingsystem ORDER BY c2.name ASC
 
-# Operating System
+# Hunting Computers
 MATCH (c:Computer) WHERE NOT (toUpper(c.operatingsystem) STARTS WITH 'WINDOWS' OR toUpper(c.operatingsystem) STARTS WITH 'MAC') RETURN c.name, c.operatingsystem ORDER BY c.operatingsystem ASC
 MATCH (c:Computer) RETURN c.operatingsystem, COUNT(c.operatingsystem) ORDER BY COUNT(c.operatingsystem) DESC
 MATCH (c:Computer) WHERE c.operatingsystem =~ '(?i).*(2000|ME|XP|2003|VISTA).*' AND c.enabled=true RETURN c.operatingsystem, COUNT(c.operatingsystem) ORDER BY c.operatingsystem DESC
@@ -15,6 +15,8 @@ MATCH (u:User) WHERE u.userpassword IS NOT NULL RETURN u.name, u.userpassword, u
 MATCH (u:User) WHERE u.hasspn=true AND u.enabled=true RETURN u.name, u.displayname, u.title, u.description
 MATCH (u:User) WHERE u.dontreqpreauth=true AND u.enabled=true RETURN u.name, u.displayname, u.title, u.description
 MATCH (u:User) WHERE u.enabled=true AND u.pwdneverexpires=true RETURN datetime({epochSeconds: toInteger(u.pwdlastset)}) AS pwdlastset, u.name, u.displayname, u.title, u.description, datetime({epochSeconds: toInteger(u.lastlogontimestamp)}) AS lastlogon ORDER BY pwdlastset ASC
+MATCH (u:User) WHERE u.title IS NOT NULL RETURN count(u.title), u.title ORDER BY count(u.title) DESC
+MATCH (u:User) WHERE u.description IS NOT NULL RETURN count(u.description), u.description ORDER BY count(u.description) DESC
 
 # Hunting Data
 MATCH (u:User) RETURN u.homedirectory, COUNT(u.homedirectory) ORDER BY COUNT(u.homedirectory) DESC
