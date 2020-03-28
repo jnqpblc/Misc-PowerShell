@@ -26,3 +26,68 @@ MATCH (d:Domain) RETURN d.name, d.functionallevel, d.objectid ORDER BY d.name AS
 MATCH (d:Domain) RETURN keys(d)
 MATCH (u:User) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
 MATCH (u:User) WHERE u.name STARTS WITH "ADMIN" WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
+
+# Keys Reference
+u: OU, GPO, Base, User, Group, Domain, Computer, ForeignSecurityPrincipal, 
+
+OU, and GPO are blank, but Base contained everything.
+
+MATCH (u:User) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
+
+"lastlogontimestamp"
+"dontreqpreauth"
+"owned"
+"pwdlastset"
+"lastlogon"
+"enabled"
+"pwdneverexpires"
+"hasspn"
+"serviceprincipalnames"
+"sidhistory"
+"passwordnotreqd"
+"sensitive"
+"unconstraineddelegation"
+"domain"
+"admincount"
+"description"
+"objectid"
+"name"
+"highvalue"
+"distinguishedname"
+"displayname"
+"email"
+"title"
+"homedirectory"
+"userpassword"
+
+
+MATCH (u:Computer) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
+
+"objectid"
+"owned"
+
+
+MATCH (u:Group) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
+
+"distinguishedname"
+"admincount"
+"description"
+"name"
+"objectid"
+"highvalue"
+"domain"
+
+
+MATCH (u:Domain) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
+
+"distinguishedname"
+"functionallevel"
+"domain"
+"name"
+"objectid"
+"highvalue"
+
+
+MATCH (u:Foreignsecurityprincipal) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
+
+"objectid"
