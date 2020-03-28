@@ -13,7 +13,7 @@ MATCH (c:Computer) WHERE c.enabled=true RETURN c.domain, c.operatingsystem, COUN
 # Hunting Users
 MATCH (u:User) WHERE u.hasspn=true AND u.enabled=true RETURN u.name, u.displayname, u.title, u.description
 MATCH (u:User) WHERE u.dontreqpreauth=true AND u.enabled=true RETURN u.name, u.displayname, u.title, u.description
-MATCH (u:User) WHERE u.enabled=true AND u.pwdneverexpires=true RETURN datetime({epochSeconds: toInt(u.pwdlastset)}) AS pwdlastset, u.name, u.displayname, u.title, u.description, datetime({epochSeconds: toInt(u.lastlogon)}) AS lastlogon ORDER BY pwdlastset ASC
+MATCH (u:User) WHERE u.enabled=true AND u.pwdneverexpires=true RETURN datetime({epochSeconds: toInteger(u.pwdlastset)}) AS pwdlastset, u.name, u.displayname, u.title, u.description, datetime({epochSeconds: toInteger(u.lastlogontimestamp)}) AS lastlogon ORDER BY pwdlastset ASC
 
 # Hunting Data
 MATCH (u:User) RETURN u.homedirectory, COUNT(u.homedirectory) ORDER BY COUNT(u.homedirectory) DESC
