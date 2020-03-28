@@ -18,6 +18,7 @@ MATCH (u:User) WHERE u.enabled=true AND u.pwdneverexpires=true RETURN datetime({
 
 # Hunting Data
 MATCH (u:User) RETURN u.homedirectory, COUNT(u.homedirectory) ORDER BY COUNT(u.homedirectory) DESC
+MATCH (u:User) WHERE u.homedirectory IS NOT NULL RETURN count(u.homedirectory), u.homedirectory ORDER BY count(u.homedirectory) DESC
 
 # Hunting Domains
 MATCH (d:Domain) RETURN d
