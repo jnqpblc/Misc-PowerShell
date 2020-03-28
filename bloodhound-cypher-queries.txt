@@ -23,4 +23,5 @@ MATCH (d:Domain) RETURN d.name, d.functionallevel, d.objectid ORDER BY d.name AS
 
 # Research
 MATCH (d:Domain) RETURN keys(d)
+MATCH (u:User) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
 MATCH (u:User) WHERE u.name STARTS WITH "ADMIN" WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
