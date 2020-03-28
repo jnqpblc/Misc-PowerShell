@@ -20,3 +20,6 @@ MATCH (u:User) RETURN u.homedirectory, COUNT(u.homedirectory) ORDER BY COUNT(u.h
 # Hunting Domains
 MATCH (d:Domain) RETURN d
 MATCH (d:Domain) RETURN d.name, d.functionallevel, d.objectsid ORDER BY d.name ASC
+
+# Research
+MATCH (d:Domain) RETURN keys(d)
