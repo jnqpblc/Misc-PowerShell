@@ -11,6 +11,7 @@ MATCH (c:Computer) WHERE c.enabled=true RETURN c.domain, COUNT(c.domain) ORDER B
 MATCH (c:Computer) WHERE c.enabled=true RETURN c.domain, c.operatingsystem, COUNT(c.operatingsystem) ORDER BY COUNT(c.operatingsystem) DESC
 
 # Hunting Users
+MATCH (u:User) WHERE u.userpassword IS NOT NULL RETURN u.name, u.userpassword, u.description
 MATCH (u:User) WHERE u.hasspn=true AND u.enabled=true RETURN u.name, u.displayname, u.title, u.description
 MATCH (u:User) WHERE u.dontreqpreauth=true AND u.enabled=true RETURN u.name, u.displayname, u.title, u.description
 MATCH (u:User) WHERE u.enabled=true AND u.pwdneverexpires=true RETURN datetime({epochSeconds: toInteger(u.pwdlastset)}) AS pwdlastset, u.name, u.displayname, u.title, u.description, datetime({epochSeconds: toInteger(u.lastlogontimestamp)}) AS lastlogon ORDER BY pwdlastset ASC
