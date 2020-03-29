@@ -21,6 +21,7 @@ MATCH (u:User) WHERE u.enabled=true AND u.pwdneverexpires=true RETURN datetime({
 MATCH (u:User) WHERE u.title IS NOT NULL RETURN count(u.title), u.title ORDER BY count(u.title) DESC
 MATCH (u:User) WHERE u.description IS NOT NULL RETURN count(u.description), u.description ORDER BY count(u.description) DESC
 MATCH (u:User) WHERE u.enabled=true AND (u.sensitive=true OR u.admincount=true) RETURN u.displayname, u.name, u.description ORDER BY u.displayname ASC
+MATCH (u:User) WHERE NOT u.sidhistory=[] RETURN u.name, u.displayname, u.sidhistory
 
 # Hunting Data
 MATCH (u:User) RETURN u.homedirectory, COUNT(u.homedirectory) ORDER BY COUNT(u.homedirectory) DESC
