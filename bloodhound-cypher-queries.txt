@@ -2,6 +2,12 @@
 MATCH (c:Computer {unconstraineddelegation:true}) RETURN c.name,c.operatingsystem ORDER BY c.name ASC
 MATCH (c1:Computer)-[:MemberOf*1..]->(g:Group) WHERE g.objectsid ENDS WITH '-516' WITH COLLECT(c1.name) AS domainControllers MATCH (c2:Computer {unconstraineddelegation:true}) WHERE NOT c2.name IN domainControllers RETURN c2.name,c2.operatingsystem ORDER BY c2.name ASC
 
+# Active Directory Objects
+MATCH (g:GPO) RETURN g.name, g.gpcpath ORDER BY g.name
+MATCH (o:OU) RETURN o.name, o.guid, o.description ORDER BY o.name
+MATCH (o:OU) RETURN count(o.name), o.name ORDER BY count(o.name) DESC
+MATCH (o:OU) WHERE o.blocksinheritance=true RETURN o.name, o.guid, o.description ORDER BY o.name
+
 # Hunting Computers
 MATCH (c:Computer) WHERE NOT (toUpper(c.operatingsystem) STARTS WITH 'WINDOWS' OR toUpper(c.operatingsystem) STARTS WITH 'MAC') RETURN c.name, c.operatingsystem ORDER BY c.operatingsystem ASC
 MATCH (c:Computer) RETURN c.operatingsystem, COUNT(c.operatingsystem) ORDER BY COUNT(c.operatingsystem) DESC
@@ -36,13 +42,26 @@ MATCH (d:Domain) RETURN keys(d)
 MATCH (u:User) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
 MATCH (u:User) WHERE u.name STARTS WITH "ADMIN" WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
 
+# Aggregate Function Research
+https://neo4j.com/docs/cypher-manual/current/functions/list/
+
+keys()
+labels()
+nodes()
+range()
+reduce()
+relationships()
+reverse()
+tail()
+
+MATCH (u:User) WHERE u.name STARTS WITH "ADMIN" RETURN keys(u)
+
 # Keys Reference
 u: OU, GPO, Base, User, Group, Domain, Computer, ForeignSecurityPrincipal, 
 
-OU, and GPO are blank, but Base contained everything.
-
 MATCH (u:User) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
 
+"objectsid"
 "lastlogontimestamp"
 "dontreqpreauth"
 "owned"
@@ -74,6 +93,7 @@ MATCH (u:Computer) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH
 
 "objectid"
 "owned"
+"name"
 
 
 MATCH (u:Group) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
@@ -81,6 +101,7 @@ MATCH (u:Group) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DI
 "distinguishedname"
 "admincount"
 "description"
+"objectsid"
 "name"
 "objectid"
 "highvalue"
@@ -90,6 +111,7 @@ MATCH (u:Group) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DI
 MATCH (u:Domain) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
 
 "distinguishedname"
+"objectsid"
 "functionallevel"
 "domain"
 "name"
@@ -100,3 +122,24 @@ MATCH (u:Domain) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH D
 MATCH (u:Foreignsecurityprincipal) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
 
 "objectid"
+
+
+MATCH (u:OU) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
+
+"domain"
+"name"
+"guid"
+"blocksinheritance"
+"highvalue"
+"description"
+
+
+MATCH (u:GPO) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DISTINCT keyslisting AS allfields RETURN allfields;
+
+"domain"
+"guid"
+"gpcpath"
+"highvalue"
+"name"
+
+
