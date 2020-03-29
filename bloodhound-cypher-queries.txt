@@ -9,6 +9,7 @@ MATCH (c:Computer) WHERE c.operatingsystem =~ '(?i).*(2000|ME|XP|2003|VISTA).*' 
 MATCH (c:Computer) WHERE c.operatingsystem =~ '(?i).*(2000|ME|XP|2003|VISTA).*' AND c.enabled=true RETURN c.domain, c.operatingsystem, COUNT(c.operatingsystem) ORDER BY c.domain DESC
 MATCH (c:Computer) WHERE c.enabled=true RETURN c.domain, COUNT(c.domain) ORDER BY COUNT(c.domain) DESC
 MATCH (c:Computer) WHERE c.enabled=true RETURN c.domain, c.operatingsystem, COUNT(c.operatingsystem) ORDER BY COUNT(c.operatingsystem) DESC
+MATCH (u:Base) WHERE u.hasspn=true AND u.enabled=true RETURN u.name, u.displayname, u.serviceprincipalnames
 
 # Hunting Users
 MATCH (u:User) WHERE u.userpassword IS NOT NULL RETURN u.name, u.userpassword, u.description
