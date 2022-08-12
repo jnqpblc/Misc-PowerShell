@@ -6,28 +6,32 @@
 .EXAMPLE
 	PS> insert "Invoke-SharpHound.exe" "Invoke-SharpHound.b64" 
 	PS> extract "Invoke-SharpHound.b64" "Invoke-SharpHound.exe"
+.LINK
+	https://gist.github.com/vortexau/13de5b6f9e46cf419f1540753c573206
+	https://gist.github.com/marcgeld/bfacfd8d70b34fdf1db0022508b02aca
 #>
 
-function insert($i, $o) {
-    $i = [IO.File]::ReadAllBytes($i)
-    $m = New-Object System.IO.MemoryStream
-    $m.Write($i, 0, $i.Length)
-    $m.Seek(0,0) | Out-Null
-    $r = New-Object System.IO.Compression.DeflateStream($m, [System.IO.Compression.CompressionMode]::Compress)
-    $m.CopyTo($r)
-    $b = [System.Convert]::ToBase64String($m.ToArray())
-    Out-File -FilePath $o
+ function decompress($i, $o) {
+    $blob = (Get-Content -Path $i)
+    $decoded = [IO.MemoryStream][Convert]::FromBase64String($blob)
+    $output = New-Object System.IO.MemoryStream
+    $gzipStream = New-Object System.IO.Compression.GzipStream $decoded, ([IO.Compression.CompressionMode]::Decompress)
+	$gzipStream.CopyTo($output)
+    $gzipStream.Close()
+	$decoded.Close()
+	[byte[]] $byteOutArray = $output.ToArray()
+    [System.IO.File]::WriteAllBytes($o,$byteOutArray)
+    $output.Close()
 }
 
-function extract($i, $o) {
-    # https://gist.github.com/vortexau/13de5b6f9e46cf419f1540753c573206
-    $i = (Get-Content -Path $i)
-    $o = [System.IO.File]::OpenWrite($o)
-    $d = [System.Convert]::FromBase64String($i)
-    $m = New-Object System.IO.MemoryStream
-    $m.Write($d, 0, $d.Length)
-    $m.Seek(0,0) | Out-Null
-    $r = New-Object System.IO.Compression.DeflateStream($m, [System.IO.Compression.CompressionMode]::Decompress)
-    $r.CopyTo($o)
-    $o.Close()
-}
+
+function compress($i, $o) {
+    $bytes = [IO.File]::ReadAllBytes($i)
+    $output = New-Object System.IO.MemoryStream
+    $gzipStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
+    $gzipStream.Write( $bytes, 0, $bytes.Length )
+    $gzipStream.Close()
+    $output.Close()
+    $encoded = [System.Convert]::ToBase64String($output.ToArray())
+    Out-File -FilePath $o -InputObject $encoded -Encoding ASCII
+} 
