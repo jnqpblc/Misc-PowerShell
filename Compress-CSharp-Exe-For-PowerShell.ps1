@@ -34,3 +34,27 @@ function compress($i, $o) {
 	Out-File -FilePath $o -InputObject $encoded -Encoding ASCII
 	$output.Close()
 }
+ 
+function download_compressed($i, $o) {
+	[byte[]] $bytes = (New-Object System.Net.WebClient).DownloadData($i)
+	$output = New-Object System.IO.MemoryStream
+	$gzipStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
+	$gzipStream.Write( $bytes, 0, $bytes.Length )
+	$gzipStream.Close()
+	$encoded = [System.Convert]::ToBase64String($output.ToArray())
+	Out-File -FilePath $o -InputObject $encoded -Encoding ASCII
+	$output.Close()
+}
+
+function download_decompressed($i, $o) {
+	$blob = (New-Object System.Net.WebClient).DownloadString($i)
+	$decoded = [IO.MemoryStream][Convert]::FromBase64String($blob)
+	$output = New-Object System.IO.MemoryStream
+	$gzipStream = New-Object System.IO.Compression.GzipStream $decoded, ([IO.Compression.CompressionMode]::Decompress)
+	$gzipStream.CopyTo($output)
+	$gzipStream.Close()
+	$decoded.Close()
+	[byte[]] $byteOutArray = $output.ToArray()
+	[System.IO.File]::WriteAllBytes($o,$byteOutArray)
+	$output.Close()
+} 
