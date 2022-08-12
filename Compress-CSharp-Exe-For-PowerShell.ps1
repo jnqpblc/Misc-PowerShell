@@ -35,7 +35,7 @@ function compress($i, $o) {
 	$output.Close()
 }
  
-function download_compressed($i, $o) {
+function download_raw_and_compress($i, $o) {
 	[byte[]] $bytes = (New-Object System.Net.WebClient).DownloadData($i)
 	$output = New-Object System.IO.MemoryStream
 	$gzipStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
@@ -46,7 +46,7 @@ function download_compressed($i, $o) {
 	$output.Close()
 }
 
-function download_decompressed($i, $o) {
+function download_compressed_and_extract($i, $o) {
 	$blob = (New-Object System.Net.WebClient).DownloadString($i)
 	$decoded = [IO.MemoryStream][Convert]::FromBase64String($blob)
 	$output = New-Object System.IO.MemoryStream
