@@ -30,7 +30,7 @@ function compress($i, $o) {
 	$gzipStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
 	$gzipStream.Write( $bytes, 0, $bytes.Length )
 	$gzipStream.Close()
-	$output.Close()
 	$encoded = [System.Convert]::ToBase64String($output.ToArray())
 	Out-File -FilePath $o -InputObject $encoded -Encoding ASCII
+	$output.Close()
 }
