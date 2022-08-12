@@ -11,7 +11,7 @@
 	https://gist.github.com/marcgeld/bfacfd8d70b34fdf1db0022508b02aca
 #>
 
- function decompress($i, $o) {
+function decompress($i, $o) {
 	$blob = (Get-Content -Path $i)
 	$decoded = [IO.MemoryStream][Convert]::FromBase64String($blob)
 	$output = New-Object System.IO.MemoryStream
