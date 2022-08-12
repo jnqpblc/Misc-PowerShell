@@ -12,26 +12,25 @@
 #>
 
  function decompress($i, $o) {
-    $blob = (Get-Content -Path $i)
-    $decoded = [IO.MemoryStream][Convert]::FromBase64String($blob)
-    $output = New-Object System.IO.MemoryStream
-    $gzipStream = New-Object System.IO.Compression.GzipStream $decoded, ([IO.Compression.CompressionMode]::Decompress)
+	$blob = (Get-Content -Path $i)
+	$decoded = [IO.MemoryStream][Convert]::FromBase64String($blob)
+	$output = New-Object System.IO.MemoryStream
+	$gzipStream = New-Object System.IO.Compression.GzipStream $decoded, ([IO.Compression.CompressionMode]::Decompress)
 	$gzipStream.CopyTo($output)
-    $gzipStream.Close()
+	$gzipStream.Close()
 	$decoded.Close()
 	[byte[]] $byteOutArray = $output.ToArray()
-    [System.IO.File]::WriteAllBytes($o,$byteOutArray)
-    $output.Close()
+	[System.IO.File]::WriteAllBytes($o,$byteOutArray)
+	$output.Close()
 }
 
-
 function compress($i, $o) {
-    $bytes = [IO.File]::ReadAllBytes($i)
-    $output = New-Object System.IO.MemoryStream
-    $gzipStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
-    $gzipStream.Write( $bytes, 0, $bytes.Length )
-    $gzipStream.Close()
-    $output.Close()
-    $encoded = [System.Convert]::ToBase64String($output.ToArray())
-    Out-File -FilePath $o -InputObject $encoded -Encoding ASCII
-} 
+	$bytes = [IO.File]::ReadAllBytes($i)
+	$output = New-Object System.IO.MemoryStream
+	$gzipStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
+	$gzipStream.Write( $bytes, 0, $bytes.Length )
+	$gzipStream.Close()
+	$output.Close()
+	$encoded = [System.Convert]::ToBase64String($output.ToArray())
+	Out-File -FilePath $o -InputObject $encoded -Encoding ASCII
+}
