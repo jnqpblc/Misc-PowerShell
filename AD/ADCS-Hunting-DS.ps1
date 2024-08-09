@@ -1,3 +1,5 @@
+# Be like certuitl.exe to find CAs
+
 # Get the root of the current domain using the RootDSE object
 $rootDSE = [ADSI]"LDAP://RootDSE"
 
