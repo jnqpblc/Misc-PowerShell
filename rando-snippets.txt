@@ -1,0 +1,180 @@
+# Get DCs
+	$Domains = Get-ADForest |Select-Object -ExpandProperty Domains
+	ForEach($Domain in $Domains) {
+	    Write-Host "[*] Enumerating $Domain"
+	    Get-ADDomain -Server $DOmain |Select-Object -ExpandProperty ReplicaDirectoryServers
+	}
+
+# Get loaded assemblies and find the exact path of the one we need
+	[AppDomain]::CurrentDomain.GetAssemblies()
+
+# Get loaded assemblies and their full names
+	$assemblyNames = [AppDomain]::CurrentDomain.GetAssemblies() | ForEach-Object { $_.FullName }
+	$assemblyNames | Sort-Object
+
+# Get loaded assemblies and their full names
+	$assemblyNames = [AppDomain]::CurrentDomain.GetAssemblies() | ForEach-Object { $_.FullName }
+	$assemblyNames | Sort-Object
+
+3k1wjb45, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+Accessibility, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
+Anonymously Hosted DynamicMethods Assembly, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+CrowdStrike.Sensor.ScriptControl, Version=6.56.17010.0, Culture=neutral, PublicKeyToken=null
+DynamicClasses, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+
+# Retrieve Basic Information about an assembly:
+	$assemblyPaths = [AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $_.FullName -like '3k1wjb45*' }
+	ForEach ($assembly in $assemblyPaths) {
+	    $properties = @{}
+	    
+	    foreach ($property in $assembly.GetType().GetProperties()) {
+	        try {
+	            $properties[$property.Name] = $property.GetValue($assembly)
+	        } catch {
+	            # Some properties might throw exceptions when accessed; handle or ignore them
+	            $properties[$property.Name] = "Error accessing value"
+	        }
+	    }
+	    
+	    Write-Output "[*] Dumping Properties:"
+	    [PSCustomObject]$properties
+	    Write-Output "[*] Dumping Properties.DefinedTypes:"
+	    [PSCustomObject]$properties.DefinedTypes
+	    Write-Output "[*] Dumping Properties.Evidence:"
+	    [PSCustomObject]$properties.Evidence
+	    Write-Output "[*] Dumping Properties.ExportedTypes:"
+	    [PSCustomObject]$properties.ExportedTypes
+	    Write-Output "[*] Dumping Properties.CustomAttributes:"
+	    [PSCustomObject]$properties.CustomAttributes
+	}
+
+# This will give you the FullName, Location, CodeBase, and information if the assembly is in the Global Assembly Cache (GAC).
+# Check the Digital Signature:
+# If a library is genuinely from a reputable vendor, it might be digitally signed. You can verify this signature:
+
+	$assemblyPaths = [AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $_.FullName -like '3k1wjb45*' }
+	ForEach ($assembly in $assemblyPaths) {
+	    $properties = @{}
+	    
+	    foreach ($property in $assembly.GetType().GetProperties()) {
+	        try {
+	            $properties[$property.Name] = $property.GetValue($assembly)
+	        } catch {
+	            # Some properties might throw exceptions when accessed; handle or ignore them
+	            $properties[$property.Name] = "Error accessing value"
+	        }
+	    }
+	    
+	    # Assuming $properties.Evidence contains the Evidence object
+	    $evidence = $properties.Evidence
+	
+	    # Convert the byte array to a hexadecimal string
+	    $md5Hash = ($evidence.MD5 | ForEach-Object { "{0:X2}" -f $_ }) -join ''
+	    $sha1Hash = ($evidence.SHA1 | ForEach-Object { "{0:X2}" -f $_ }) -join ''
+	    $sha256Hash = ($evidence.SHA256 | ForEach-Object { "{0:X2}" -f $_ }) -join ''
+	
+	    Write-Host "MD5 Hash: $md5Hash"
+	    Write-Host "SHA1 Hash: $sha1Hash"
+	    Write-Host "SHA256 Hash: $sha256Hash"
+	
+	    # Extract the Publisher certificate from the evidence collection
+	    $publisherEvidence = $evidence | Where-Object { $_ -is [System.Security.Policy.Publisher] }
+	
+	    if (-not $publisherEvidence) {
+	        Write-Host "No publisher evidence found." -ForegroundColor Red
+	        return
+	    }
+	
+	    # Get the certificate from the Publisher evidence
+	    $cert = $publisherEvidence.Certificate
+	
+	    $certprops = @{}
+	    foreach ($certprop in $cert.GetType().GetProperties()) {
+	        try {
+	            $certprops[$certprop.Name] = $certprop.GetValue($cert)
+	        } catch {
+	            # Some properties might throw exceptions when accessed; handle or ignore them
+	            $certprops[$certprop.Name] = "Error accessing value"
+	        }
+	    }
+	    $certprops
+	
+	    # Validation
+	
+	    # Check the chain of trust
+	    $chain = New-Object System.Security.Cryptography.X509Certificates.X509Chain
+	    #$chain.Build($cert) # This builds the chain of trust for the certificate
+	
+	    # Additional checks can be added, like checking against a CRL, etc.
+	    # Assuming $cert is your X509Certificate2 object
+	
+	    # Setup the chain policy to check against online CRL
+	    $chain.ChainPolicy.RevocationMode = [System.Security.Cryptography.X509Certificates.X509RevocationMode]::Online
+	    $chain.ChainPolicy.RevocationFlag = [System.Security.Cryptography.X509Certificates.X509RevocationFlag]::ExcludeRoot
+	    $chain.ChainPolicy.UrlRetrievalTimeout = New-TimeSpan -Seconds 30
+	    $chain.ChainPolicy.VerificationFlags = [System.Security.Cryptography.X509Certificates.X509VerificationFlags]::NoFlag
+	
+	    # Build the certificate chain to validate
+	    $isChainValid = $chain.Build($cert)
+	
+	    # Check the chain status
+	    if (-not $isChainValid) {
+	        Write-Host "Chain is not valid. See below for details:" -ForegroundColor Red
+	        $chain.ChainStatus | ForEach-Object {
+	            Write-Host $_.Status -ForegroundColor Yellow
+	            Write-Host $_.StatusInformation -ForegroundColor Yellow
+	        }
+	    }
+	    else {
+	        Write-Host "Certificate is valid and has not been revoked." -ForegroundColor Green
+	        $chain.ChainElements | fl
+	    }
+	}
+
+
+
+
+
+
+# Inspect Loaded Types:
+# You can inspect the types within the assembly to get an idea of its purpose:
+
+$assembly = [System.Reflection.Assembly]::LoadFrom("Path_To_Your_Assembly.dll")
+$assembly.GetTypes() | ForEach-Object {
+    [PSCustomObject]@{
+        Name         = $_.Name
+        BaseType     = $_.BaseType
+        IsPublic     = $_.IsPublic
+        IsSealed     = $_.IsSealed
+        IsAbstract   = $_.IsAbstract
+        FullTypeName = $_.FullName
+    }
+} | Format-Table -AutoSize
+
+# Replace Path_To_Your_Assembly.dll with the path to the suspicious assembly.
+# Inspect Assembly's Manifest:
+# The manifest contains metadata information about the assembly:
+
+    $manifest = $assembly.ManifestModule
+    $manifest
+
+# Check for any open file handles or network connections related to the assembly:
+# If you have Sysinternals Suite, you can use handle.exe and netstat to check if the assembly or any related process has open file handles or network connections.
+
+# Static and Dynamic Analysis:
+# For more in-depth analysis, consider using tools like ILDASM (Intermediate Language Disassembler) or DNSpy to look into the assembly's intermediate language code. For dynamic analysis, tools like Process Monitor or Wireshark can be helpful.
+
+# Grepping for passwords with findstr and Powershell
+PS C:\> foreach ($Domain in (Get-ADForest).Domains) {
+    Write-Output "`n[*] Searching $Domain"
+    $DC = (Get-ADDomainController -Server $Domain).HostName
+    findstr /S cpass \\$DC\sysvol\$Domain\Policies\*.xml
+}
+
+PS C:\> 
+foreach ($Domain in (Get-ADForest).Domains) {
+    Write-Output "`n[*] Searching $Domain"
+    $DC = (Get-ADDomainController -Server $Domain).HostName
+    findstr /Si password \\$DC\sysvol\$Domain\Policies\* |findstr /v "\.adml:"
+}
+
