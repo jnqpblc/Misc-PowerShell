@@ -5,7 +5,7 @@ Import-Module ActiveDirectory
 $allObjects = Get-ADObject -Filter * -Property objectClass
 
 # Group the objects by their class
-$groupedByClass = $allObjects | Group-Object -Property objectClass
+$groupedByClass = $allObjects |Group-Object -Property objectClass
 
 # Display the classes and the count of objects in each class
-$groupedByClass | Select-Object Name, Count
+$groupedByClass |Select-Object Name, Count |Sort-Object Name
