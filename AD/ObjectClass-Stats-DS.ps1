@@ -1,10 +1,20 @@
-# Create a directory searcher using System.DirectoryServices
-$domain = "LDAP://$env:USERDOMAIN"
-$searcher = New-Object DirectoryServices.DirectorySearcher
-$searcher.SearchRoot = New-Object DirectoryServices.DirectoryEntry($domain)
+# Get the root of the current domain using the RootDSE object
+$rootDSE = [ADSI]"LDAP://RootDSE"
 
-# Set filter to retrieve all objects
-$searcher.Filter = "(objectClass=*)"
+# Retrieve the default naming context (domain DN)
+$domainDN = $rootDSE.rootDomainNamingContext
+
+# Construct and access the LDAP path dynamically for the CA container
+$objGC = [ADSI]"LDAP://$domainDN";
+
+# Initialize the DirectorySearcher
+$Searcher = New-Object DirectoryServices.DirectorySearcher
+$Searcher.PageSize = 1000
+$Searcher.SearchRoot = $objGC
+
+# Adjust the filter according to what you're looking for within this context
+# Since we're in the Configuration container, the objectClass filter might differ
+$Searcher.Filter = "(objectClass=*)"
 
 # Specify properties to load
 $searcher.PropertiesToLoad.Add("objectClass") > $null
