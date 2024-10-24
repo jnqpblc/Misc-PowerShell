@@ -25,8 +25,9 @@ foreach ($Domain in $Domains) {
     }
     $AllForestGpoACLs += $AllDomainGpoACLs
     Write-Output "`n`n###`n###`t[+] Got GPOs for $($Domain.distinguishedName):`n###`n"
-    $AllDomainGpoACLs |Select-Object -ExpandProperty IdentityReference |Group-Object -Property Value |
-    Select-Object Name, Count |Sort-Object -Property Count -Descending
-    #Get-ADUser REPLACEWITHUSER -Properties AccountNotDelegated,adminCount,Description,DistinguishedName,DoesNotRequirePreAuth,Enabled,HomeDirectory,HomeDrive,HomePage,LastBadPasswordAttempt,LastLogonDate,MemberOf,Name,PasswordExpired,PasswordLastSet,PasswordNeverExpires,PasswordNotRequired,pwdLastSet,PrincipalsAllowedToDelegateToAccount,ScriptPath,ServicePrincipalNames,SmartcardLogonRequired,Title
-    #$AllForestGpoACLs |Where-Object { $_.IdentityReference -like "*REPLACEWITHUSER*" } |Select-Object Domain, DisplayName
+    $AllDomainGpoACLs |Select-Object -ExpandProperty IdentityReference |Group-Object -Property Value |Select-Object Name, Count |Sort-Object -Property Count -Descending
 }
+Write-Output "`n`n###`n###`t[+] Got GPOs for entire forest:`n###`n"
+$AllForestGpoACLs |Select-Object -ExpandProperty IdentityReference |Group-Object -Property Value |Select-Object Name, Count |Sort-Object -Property Count -Descending
+#Get-ADUser REPLACEWITHUSER -Properties AccountNotDelegated,adminCount,Description,DistinguishedName,DoesNotRequirePreAuth,Enabled,HomeDirectory,HomeDrive,HomePage,LastBadPasswordAttempt,LastLogonDate,MemberOf,Name,PasswordExpired,PasswordLastSet,PasswordNeverExpires,PasswordNotRequired,pwdLastSet,PrincipalsAllowedToDelegateToAccount,ScriptPath,ServicePrincipalNames,SmartcardLogonRequired,Title
+#$AllForestGpoACLs |Where-Object { $_.IdentityReference -like "*REPLACEWITHUSER*" } |Select-Object Domain, DisplayName
