@@ -23,4 +23,5 @@ foreach ($Domain in $Domains) {
     Write-Output "`n`n###`n###`t[+] Got GPOs for $($Domain.distinguishedName):`n###`n"
     $AllGpoACLs |Select-Object -ExpandProperty IdentityReference |Group-Object -Property Value |
     Select-Object Name, Count |Sort-Object -Property Count -Descending
+    #Get-ADUser {REPLACE-WITH-USER} -Properties AccountNotDelegated,adminCount,Description,DistinguishedName,DoesNotRequirePreAuth,Enabled,HomeDirectory,HomeDrive,HomePage,LastBadPasswordAttempt,LastLogonDate,MemberOf,Name,PasswordExpired,PasswordLastSet,PasswordNeverExpires,PasswordNotRequired,pwdLastSet,PrincipalsAllowedToDelegateToAccount,ScriptPath,ServicePrincipalNames,SmartcardLogonRequired,Title
 }
