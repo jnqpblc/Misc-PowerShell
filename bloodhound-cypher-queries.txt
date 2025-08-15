@@ -29,6 +29,34 @@ MATCH (u:User) WHERE u.description IS NOT NULL RETURN count(u.description), u.de
 MATCH (u:User) WHERE u.enabled=true AND (u.sensitive=true OR u.admincount=true) RETURN u.displayname, u.name, u.description ORDER BY u.displayname ASC
 MATCH (u:User) WHERE NOT u.sidhistory=[] RETURN u.name, u.displayname, u.sidhistory
 MATCH p=(u:User)-[r:GenericAll]->() WHERE u.admincount=false RETURN p
+MATCH p=(u:User)-[r:AddAllowedToAct]->() WHERE u.admincount=false RETURN p
+
+# Hunting Relationships
+MATCH p=(n)-[r:GenericAll]->() WHERE n.admincount=false RETURN p
+MATCH p=(n)-[r:AddAllowedToAct]->() WHERE n.admincount=false RETURN p
+MATCH ()-[r]->() RETURN DISTINCT type(r) ORDER BY type(r)
+MATCH (n)-[r]->() WHERE n.admincount=false RETURN count(r) AS count, type(r) AS relType ORDER BY count
+
+	type(r)
+"AddAllowedToAct"
+"AddKeyCredentialLink"
+"AddMember"
+"AllExtendedRights"
+"Contains"
+"ForceChangePassword"
+"GenericAll"
+"GenericWrite"
+"GetChanges"
+"GetChangesAll"
+"GetChangesInFilteredSet"
+"GpLink"
+"MemberOf"
+"Owns"
+"WriteAccountRestrictions"
+"WriteDacl"
+"WriteGPLink"
+"WriteOwner"
+"WriteSPN"
 
 # Hunting Data
 MATCH (u:User) RETURN u.homedirectory, COUNT(u.homedirectory) ORDER BY COUNT(u.homedirectory) DESC
