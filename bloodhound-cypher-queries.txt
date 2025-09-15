@@ -38,18 +38,34 @@ MATCH (c:Computer {enabled:TRUE}) WHERE c.operatingsystem =~ '(?i).*(NT 3|NT 4|2
 
 # Hunting Users
 MATCH (u:User {enabled:TRUE}) RETURN properties(u) LIMIT 1;
+MATCH (u:User {enabled:TRUE}) RETURN COUNT(u), u.domain
 MATCH (u:User {enabled:TRUE}) WHERE u.userpassword IS NOT NULL RETURN u.name, u.userpassword, u.description
 MATCH (u:User {enabled:TRUE, passwordnotreqd:TRUE}) RETURN u.displayname, u.name, u.description ORDER BY u.displayname ASC
-MATCH (u:User {enabled:TRUE, hasspn:TRUE}) RETURN u.name, u.displayname, u.title, u.description
 MATCH (u:User {enabled:TRUE, dontreqpreauth:TRUE}) RETURN u.name, u.displayname, u.title, u.description
 MATCH (u:User {enabled:TRUE, unconstraineddelegation:TRUE}) RETURN u.displayname, u.name, u.description ORDER BY u.displayname ASC
-MATCH (u:User {enabled:TRUE, pwdneverexpires:TRUE}) RETURN datetime({epochSeconds: toInteger(u.pwdlastset)}) AS pwdlastset, u.name, u.displayname, u.title, u.description, datetime({epochSeconds: toInteger(u.lastlogontimestamp)}) AS lastlogon ORDER BY pwdlastset ASC
-MATCH (u:User {enabled:TRUE}) WHERE u.title IS NOT NULL RETURN count(u.title), u.title ORDER BY count(u.title) DESC
-MATCH (u:User {enabled:TRUE}) WHERE u.description IS NOT NULL RETURN count(u.description), u.description ORDER BY count(u.description) DESC
+MATCH (u:User {enabled:TRUE, trustedtoauth:TRUE}) RETURN u.name, u.displayname, u.description
+MATCH (u:User {enabled:TRUE, hasspn:TRUE}) RETURN u.name, u.displayname, u.title, u.description
+MATCH (u:User {enabled:TRUE}) WHERE NOT u.sidhistory=[] RETURN u.name, u.displayname, u.description
+MATCH (u:User {enabled:TRUE, hasspn:TRUE}) WHERE NOT u.serviceprincipalnames=[] UNWIND u.serviceprincipalnames AS spn WITH spn, u RETURN SPLIT(spn, "/")[0] AS spn_type, COUNT(DISTINCT u.name) AS count ORDER BY count ASC;
+MATCH (u:User{enabled:TRUE}) UNWIND u.serviceprincipalnames AS spn WITH spn, u WHERE spn =~ '(?i).*(MSSQLSvc|HTTP).*' RETURN u.name, u.displayname, collect(spn) AS matched_spns;
+MATCH (u:User {enabled:TRUE}) WHERE u.lastlogontimestamp < 1 RETURN u.name, datetime({ epochSeconds: toInteger(u.whencreated) }) AS created_ts, u.distinguishedname
+MATCH (u:User {enabled:TRUE}) WHERE u.distinguishedname IS NOT NULL WITH u, [part IN SPLIT(u.distinguishedname, ',') WHERE part STARTS WITH 'OU='] AS ou_parts WITH u, REVERSE(ou_parts) AS ou_parts_reversed WITH u, REDUCE(s = '', part IN ou_parts_reversed | s + CASE WHEN s <> '' THEN ' / ' ELSE '' END + REPLACE(part,'OU=','')) AS ou_path RETURN COUNT(u) AS count, ou_path ORDER BY ou_path ASC;
+MATCH (u:User {enabled:TRUE}) WHERE u.title IS NOT NULL RETURN count(u) as count, u.title ORDER BY count ASC
+MATCH (u:User {enabled:TRUE}) WHERE u.description IS NOT NULL RETURN count(u) as count, u.description ORDER BY count ASC
 MATCH (u:User {enabled:TRUE}) WHERE (u.sensitive=true OR u.admincount=true) RETURN u.displayname, u.name, u.description ORDER BY u.displayname ASC
 MATCH (u:User {enabled:TRUE}) WHERE NOT u.sidhistory=[] RETURN u.name, u.displayname, u.sidhistory
+// pwdneverexpires:TRUE - Calculate 1 year ago in Unix timestamp (approx. 365 days)
+WITH timestamp() / 1000 AS now_seconds, (timestamp() / 1000) - 356*24*60*60 AS cutoff
+MATCH (u:User {enabled:TRUE, pwdneverexpires:TRUE}) WHERE u.pwdlastset IS NOT NULL AND u.pwdlastset < cutoff RETURN datetime({epochSeconds: toInteger(u.pwdlastset)}) AS pwdlastset, u.name, u.displayname, u.title, u.description, datetime({epochSeconds: toInteger(u.lastlogontimestamp)}) AS lastlogon ORDER BY pwdlastset ASC
+// pwdneverexpires:FALSE - Calculate 1 year ago in Unix timestamp (approx. 365 days)
+WITH timestamp() / 1000 AS now_seconds, (timestamp() / 1000) - 356*24*60*60 AS cutoff
+MATCH (u:User {enabled:TRUE, pwdneverexpires:FALSE}) WHERE u.pwdlastset IS NOT NULL AND u.pwdlastset < cutoff RETURN datetime({epochSeconds: toInteger(u.pwdlastset)}) AS pwdlastset, u.name, u.displayname, u.title, u.description, datetime({epochSeconds: toInteger(u.lastlogontimestamp)}) AS lastlogon ORDER BY pwdlastset ASC
+// whencreated == pwdlastset
+MATCH (u:User {enabled:TRUE}) WHERE u.pwdlastset IS NOT NULL AND u.whencreated IS NOT NULL AND NOT u.pwdlastset IN [-1.0, 0.0] AND toInteger(u.pwdlastset) = toInteger(u.whencreated) RETURN u.name AS User, u.domain AS Domain, datetime({ epochSeconds: toInteger(u.whencreated) }) AS created_ts, datetime({ epochSeconds: toInteger(u.pwdlastset) }) AS pwdlastset_ts, u.objectid AS ObjectID ORDER BY created_ts DESC;
+//Relationships
 MATCH p=(u:User {enabled:TRUE, admincount:FALSE})-[r:GenericAll]->() RETURN p
 MATCH p=(u:User {enabled:TRUE, admincount:FALSE})-[r:AddAllowedToAct]->() RETURN p
+
 
 # Hunting Groups
 MATCH (g:Group) RETURN properties(g) LIMIT 1;
