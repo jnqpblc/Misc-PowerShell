@@ -10,6 +10,14 @@ MATCH (o:OU) RETURN o.name, o.guid, o.description ORDER BY o.name
 MATCH (o:OU) RETURN count(o.name), o.name ORDER BY count(o.name) DESC
 MATCH (o:OU {blocksinheritance:TRUE}) RETURN o.name, o.guid, o.description ORDER BY o.name
 
+# Hunting Domains and Trusts
+MATCH (d:Domain) RETURN properties(d) LIMIT 1;
+MATCH (d:Domain) WHERE d.functionallevel IS NOT NULL RETURN d.name, d.functionallevel
+MATCH (d:Domain)-[r]->(n) RETURN d.name, COUNT(type(r)) as count, type(r) ORDER BY count
+MATCH (d:Domain)-[r:TrustedBy]->(n) RETURN d.name, type(r), n.name
+MATCH (d:Domain)-[r:GpLink]->(n) RETURN d.name, type(r), n.name
+MATCH (d:Domain)-[r:Contains]->(n) RETURN d.name, type(r), n.name
+
 # Hunting Computers
 MATCH (c:Computer) RETURN properties(c) LIMIT 1;
 MATCH (c:Computer {enabled:TRUE}) WHERE NOT (toUpper(c.operatingsystem) STARTS WITH 'WINDOWS' OR toUpper(c.operatingsystem) STARTS WITH 'MAC') RETURN c.name, c.operatingsystem ORDER BY c.operatingsystem ASC
