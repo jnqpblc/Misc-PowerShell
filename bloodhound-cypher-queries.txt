@@ -1,6 +1,6 @@
 # Unconstrained Delegation
-MATCH (c:Computer {unconstraineddelegation:true}) RETURN c.name,c.operatingsystem ORDER BY c.name ASC
-MATCH (c1:Computer)-[:MemberOf*1..]->(g:Group) WHERE g.objectsid ENDS WITH '-516' WITH COLLECT(c1.name) AS domainControllers MATCH (c2:Computer {unconstraineddelegation:true}) WHERE NOT c2.name IN domainControllers RETURN c2.name,c2.operatingsystem ORDER BY c2.name ASC
+MATCH (c:Computer {enabled:TRUE, unconstraineddelegation:TRUE}) RETURN c.name,c.operatingsystem ORDER BY c.name ASC
+MATCH (c1:Computer {enabled:TRUE})-[:MemberOf*1..]->(g:Group) WHERE g.objectsid ENDS WITH '-516' WITH COLLECT(c1.name) AS domainControllers MATCH (c2:Computer {unconstraineddelegation:true}) WHERE NOT c2.name IN domainControllers RETURN c2.name,c2.operatingsystem ORDER BY c2.name ASC
 
 # Active Directory Objects
 MATCH (g:GPO) RETURN properties(g) LIMIT 1;
@@ -8,44 +8,44 @@ MATCH (g:GPO) RETURN g.name, g.gpcpath ORDER BY g.name
 MATCH (o:OU) RETURN properties(o) LIMIT 1;
 MATCH (o:OU) RETURN o.name, o.guid, o.description ORDER BY o.name
 MATCH (o:OU) RETURN count(o.name), o.name ORDER BY count(o.name) DESC
-MATCH (o:OU) WHERE o.blocksinheritance=true RETURN o.name, o.guid, o.description ORDER BY o.name
+MATCH (o:OU {blocksinheritance:TRUE}) RETURN o.name, o.guid, o.description ORDER BY o.name
 
 # Hunting Computers
 MATCH (c:Computer) RETURN properties(c) LIMIT 1;
-MATCH (c:Computer) WHERE NOT (toUpper(c.operatingsystem) STARTS WITH 'WINDOWS' OR toUpper(c.operatingsystem) STARTS WITH 'MAC') RETURN c.name, c.operatingsystem ORDER BY c.operatingsystem ASC
-MATCH (c:Computer) RETURN c.operatingsystem, COUNT(c.operatingsystem) ORDER BY COUNT(c.operatingsystem) DESC
-MATCH (c:Computer) WHERE c.operatingsystem =~ '(?i).*(2000|ME|XP|2003|VISTA).*' AND c.enabled=true RETURN c.operatingsystem, COUNT(c.operatingsystem) ORDER BY c.operatingsystem DESC
-MATCH (c:Computer) WHERE c.operatingsystem =~ '(?i).*(2000|ME|XP|2003|VISTA).*' AND c.enabled=true RETURN c.domain, c.operatingsystem, COUNT(c.operatingsystem) ORDER BY c.domain DESC
-MATCH (c:Computer) WHERE c.enabled=true RETURN c.domain, COUNT(c.domain) ORDER BY COUNT(c.domain) DESC
-MATCH (c:Computer) WHERE c.enabled=true RETURN c.domain, c.operatingsystem, COUNT(c.operatingsystem) ORDER BY COUNT(c.operatingsystem) DESC
+MATCH (c:Computer {enabled:TRUE}) WHERE NOT (toUpper(c.operatingsystem) STARTS WITH 'WINDOWS' OR toUpper(c.operatingsystem) STARTS WITH 'MAC') RETURN c.name, c.operatingsystem ORDER BY c.operatingsystem ASC
+MATCH (c:Computer {enabled:TRUE}) RETURN c.operatingsystem, COUNT(c.operatingsystem) ORDER BY COUNT(c.operatingsystem) DESC
+MATCH (c:Computer {enabled:TRUE}) WHERE c.operatingsystem =~ '(?i).*(2000|ME|XP|2003|VISTA).*' RETURN c.operatingsystem, COUNT(c.operatingsystem) ORDER BY c.operatingsystem DESC
+MATCH (c:Computer {enabled:TRUE}) WHERE c.operatingsystem =~ '(?i).*(2000|ME|XP|2003|VISTA).*' RETURN c.domain, c.operatingsystem, COUNT(c.operatingsystem) ORDER BY c.domain DESC
+MATCH (c:Computer {enabled:TRUE}) RETURN c.domain, COUNT(c.domain) ORDER BY COUNT(c.domain) DESC
+MATCH (c:Computer {enabled:TRUE}) RETURN c.domain, c.operatingsystem, COUNT(c.operatingsystem) ORDER BY COUNT(c.operatingsystem) DESC
 
-MATCH (u:Base) WHERE u.hasspn=true AND u.enabled=true RETURN u.name, u.displayname, u.serviceprincipalnames
+MATCH (u:Base {enabled:TRUE, hasspn:TRUE}) RETURN u.name, u.displayname, u.serviceprincipalnames
 
 # Possible PreWin2k Computer Accounts
-MATCH (c:Computer) WHERE c.pwdlastset IS NOT NULL AND c.whencreated IS NOT NULL AND NOT c.pwdlastset IN [-1.0, 0.0] AND toInteger(c.pwdlastset) = toInteger(c.whencreated) RETURN c.name AS Computer, c.domain AS Domain, datetime({ epochSeconds: toInteger(c.whencreated) }) AS created_ts, datetime({ epochSeconds: toInteger(c.pwdlastset) }) AS pwdlastset_ts, c.objectid AS ObjectID ORDER BY created_ts DESC;
+MATCH (c:Computer {enabled:TRUE}) WHERE c.pwdlastset IS NOT NULL AND c.whencreated IS NOT NULL AND NOT c.pwdlastset IN [-1.0, 0.0] AND toInteger(c.pwdlastset) = toInteger(c.whencreated) RETURN c.name AS Computer, c.domain AS Domain, datetime({ epochSeconds: toInteger(c.whencreated) }) AS created_ts, datetime({ epochSeconds: toInteger(c.pwdlastset) }) AS pwdlastset_ts, c.objectid AS ObjectID ORDER BY created_ts DESC;
 
 # Hunting Users
-MATCH (u:User) RETURN properties(u) LIMIT 1;
-MATCH (u:User) WHERE u.userpassword IS NOT NULL RETURN u.name, u.userpassword, u.description
-MATCH (u:User) WHERE u.passwordnotreqd=true RETURN u.displayname, u.name, u.description ORDER BY u.displayname ASC
-MATCH (u:User) WHERE u.hasspn=true AND u.enabled=true RETURN u.name, u.displayname, u.title, u.description
-MATCH (u:User) WHERE u.dontreqpreauth=true AND u.enabled=true RETURN u.name, u.displayname, u.title, u.description
-MATCH (u:User) WHERE u.unconstraineddelegation=true RETURN u.displayname, u.name, u.description ORDER BY u.displayname ASC
-MATCH (u:User) WHERE u.enabled=true AND u.pwdneverexpires=true RETURN datetime({epochSeconds: toInteger(u.pwdlastset)}) AS pwdlastset, u.name, u.displayname, u.title, u.description, datetime({epochSeconds: toInteger(u.lastlogontimestamp)}) AS lastlogon ORDER BY pwdlastset ASC
-MATCH (u:User) WHERE u.title IS NOT NULL RETURN count(u.title), u.title ORDER BY count(u.title) DESC
-MATCH (u:User) WHERE u.description IS NOT NULL RETURN count(u.description), u.description ORDER BY count(u.description) DESC
-MATCH (u:User) WHERE u.enabled=true AND (u.sensitive=true OR u.admincount=true) RETURN u.displayname, u.name, u.description ORDER BY u.displayname ASC
-MATCH (u:User) WHERE NOT u.sidhistory=[] RETURN u.name, u.displayname, u.sidhistory
-MATCH p=(u:User)-[r:GenericAll]->() WHERE u.admincount=false RETURN p
-MATCH p=(u:User)-[r:AddAllowedToAct]->() WHERE u.admincount=false RETURN p
+MATCH (u:User {enabled:TRUE}) RETURN properties(u) LIMIT 1;
+MATCH (u:User {enabled:TRUE}) WHERE u.userpassword IS NOT NULL RETURN u.name, u.userpassword, u.description
+MATCH (u:User {enabled:TRUE, passwordnotreqd:TRUE}) RETURN u.displayname, u.name, u.description ORDER BY u.displayname ASC
+MATCH (u:User {enabled:TRUE, hasspn:TRUE}) RETURN u.name, u.displayname, u.title, u.description
+MATCH (u:User {enabled:TRUE, dontreqpreauth:TRUE}) RETURN u.name, u.displayname, u.title, u.description
+MATCH (u:User {enabled:TRUE, unconstraineddelegation:TRUE}) RETURN u.displayname, u.name, u.description ORDER BY u.displayname ASC
+MATCH (u:User {enabled:TRUE, pwdneverexpires:TRUE}) RETURN datetime({epochSeconds: toInteger(u.pwdlastset)}) AS pwdlastset, u.name, u.displayname, u.title, u.description, datetime({epochSeconds: toInteger(u.lastlogontimestamp)}) AS lastlogon ORDER BY pwdlastset ASC
+MATCH (u:User {enabled:TRUE}) WHERE u.title IS NOT NULL RETURN count(u.title), u.title ORDER BY count(u.title) DESC
+MATCH (u:User {enabled:TRUE}) WHERE u.description IS NOT NULL RETURN count(u.description), u.description ORDER BY count(u.description) DESC
+MATCH (u:User {enabled:TRUE}) WHERE (u.sensitive=true OR u.admincount=true) RETURN u.displayname, u.name, u.description ORDER BY u.displayname ASC
+MATCH (u:User {enabled:TRUE}) WHERE NOT u.sidhistory=[] RETURN u.name, u.displayname, u.sidhistory
+MATCH p=(u:User {enabled:TRUE, admincount:FALSE})-[r:GenericAll]->() RETURN p
+MATCH p=(u:User {enabled:TRUE, admincount:FALSE})-[r:AddAllowedToAct]->() RETURN p
 
 # Hunting Groups
 MATCH (g:Group) RETURN properties(g) LIMIT 1;
 MATCH (n)-[r:MemberOf]->(g) WHERE g.samaccountname =~ '(?i).*(2000).*' RETURN n.name, type(r), g.name
 
 # Hunting Relationships
-MATCH p=(n)-[r:GenericAll]->() WHERE n.admincount=false RETURN p
-MATCH p=(n)-[r:AddAllowedToAct]->() WHERE n.admincount=false RETURN p
+MATCH p=(n {enabled:TRUE, admincount:FALSE})-[r:GenericAll]->() RETURN p
+MATCH p=(n {enabled:TRUE, admincount:FALSE})-[r:AddAllowedToAct]->() RETURN p
 MATCH ()-[r]->() RETURN DISTINCT type(r) ORDER BY type(r)
 MATCH (n)-[r]->() WHERE n.admincount=false RETURN count(r) AS count, type(r) AS relType ORDER BY count
 
