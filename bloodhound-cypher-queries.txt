@@ -1,6 +1,7 @@
 # Unconstrained Delegation
-MATCH (c:Computer {enabled:TRUE, unconstraineddelegation:TRUE}) RETURN c.name,c.operatingsystem ORDER BY c.name ASC
-MATCH (c1:Computer {enabled:TRUE})-[:MemberOf*1..]->(g:Group) WHERE g.objectsid ENDS WITH '-516' WITH COLLECT(c1.name) AS domainControllers MATCH (c2:Computer {unconstraineddelegation:true}) WHERE NOT c2.name IN domainControllers RETURN c2.name,c2.operatingsystem ORDER BY c2.name ASC
+//MATCH (c:Computer {enabled:TRUE, unconstraineddelegation:TRUE}) RETURN c.name,c.operatingsystem ORDER BY c.name ASC
+MATCH (c1:Computer {enabled:"true"})-[:MemberOf*1..]->(g:Group) WHERE g.objectsid ENDS WITH "-516" WITH COLLECT(c1.name) AS domainControllers MATCH (c2:Computer {unconstraineddelegation:"true"}) WHERE NOT (c2.name IN domainControllers) RETURN c2.name, c2.operatingsystem ORDER BY c2.name ASC;
+
 
 # Active Directory Objects
 MATCH (g:GPO) RETURN properties(g) LIMIT 1;
