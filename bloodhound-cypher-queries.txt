@@ -2,15 +2,6 @@
 //MATCH (c:Computer {enabled:TRUE, unconstraineddelegation:TRUE}) RETURN c.name,c.operatingsystem ORDER BY c.name ASC
 MATCH (c1:Computer {enabled:"true"})-[:MemberOf*1..]->(g:Group) WHERE g.objectsid ENDS WITH "-516" WITH COLLECT(c1.name) AS domainControllers MATCH (c2:Computer {unconstraineddelegation:"true"}) WHERE NOT (c2.name IN domainControllers) RETURN c2.name, c2.operatingsystem ORDER BY c2.name ASC;
 
-
-# Active Directory Objects
-MATCH (g:GPO) RETURN properties(g) LIMIT 1;
-MATCH (g:GPO) RETURN g.name, g.gpcpath ORDER BY g.name
-MATCH (o:OU) RETURN properties(o) LIMIT 1;
-MATCH (o:OU) RETURN o.name, o.guid, o.description ORDER BY o.name
-MATCH (o:OU) RETURN count(o.name), o.name ORDER BY count(o.name) DESC
-MATCH (o:OU {blocksinheritance:TRUE}) RETURN o.name, o.guid, o.description ORDER BY o.name
-
 # Hunting Domains and Trusts
 MATCH (d:Domain) RETURN properties(d) LIMIT 1;
 MATCH (d:Domain) WHERE d.functionallevel IS NOT NULL RETURN d.name, d.functionallevel
@@ -21,17 +12,26 @@ MATCH (d:Domain)-[r:Contains]->(n) RETURN d.name, type(r), n.name
 
 # Hunting Computers
 MATCH (c:Computer) RETURN properties(c) LIMIT 1;
-MATCH (c:Computer {enabled:TRUE}) WHERE NOT (toUpper(c.operatingsystem) STARTS WITH 'WINDOWS' OR toUpper(c.operatingsystem) STARTS WITH 'MAC') RETURN c.name, c.operatingsystem ORDER BY c.operatingsystem ASC
-MATCH (c:Computer {enabled:TRUE}) RETURN c.operatingsystem, COUNT(c.operatingsystem) ORDER BY COUNT(c.operatingsystem) DESC
-MATCH (c:Computer {enabled:TRUE}) WHERE c.operatingsystem =~ '(?i).*(2000|ME|XP|2003|VISTA).*' RETURN c.operatingsystem, COUNT(c.operatingsystem) ORDER BY c.operatingsystem DESC
-MATCH (c:Computer {enabled:TRUE}) WHERE c.operatingsystem =~ '(?i).*(2000|ME|XP|2003|VISTA).*' RETURN c.domain, c.operatingsystem, COUNT(c.operatingsystem) ORDER BY c.domain DESC
 MATCH (c:Computer {enabled:TRUE}) RETURN c.domain, COUNT(c.domain) ORDER BY COUNT(c.domain) DESC
 MATCH (c:Computer {enabled:TRUE}) RETURN c.domain, c.operatingsystem, COUNT(c.operatingsystem) ORDER BY COUNT(c.operatingsystem) DESC
-
-MATCH (u:Base {enabled:TRUE, hasspn:TRUE}) RETURN u.name, u.displayname, u.serviceprincipalnames
-
-# Possible PreWin2k Computer Accounts
+MATCH (c:Computer {enabled:TRUE}) RETURN COUNT(c.domain), c.domain
+MATCH (c:Computer {enabled:TRUE}) RETURN c.haslaps, COUNT(c.haslaps)
+MATCH (c:Computer {enabled:TRUE, trustedtoauth:TRUE}) RETURN c.name, c.displayname, c.description
+MATCH (c:Computer {enabled:TRUE}) WHERE NOT c.sidhistory=[] RETURN c.name, c.displayname, c.description
+MATCH (c:Computer {enabled:TRUE}) WHERE NOT c.serviceprincipalnames=[] UNWIND c.serviceprincipalnames AS spn WITH spn, c RETURN SPLIT(spn, "/")[0] AS spn_type, COUNT(DISTINCT c.name) AS computer_count ORDER BY computer_count ASC;
+MATCH (c:Computer {enabled:TRUE}) UNWIND c.serviceprincipalnames AS spn WITH spn, c WHERE spn =~ '(?i).*(piserver|nfs).*' RETURN c.name, c.displayname, collect(spn) AS matched_spns;
+MATCH (c:Computer {enabled:TRUE}) WHERE c.lastlogontimestamp < 1 RETURN c.name, datetime({ epochSeconds: toInteger(c.whencreated) }) AS created_ts, c.distinguishedname
+MATCH (c:Computer {enabled:TRUE}) WHERE c.distinguishedname IS NOT NULL WITH c, [part IN SPLIT(c.distinguishedname, ',') WHERE part STARTS WITH 'OU='] AS ou_parts WITH c, REVERSE(ou_parts) AS ou_parts_reversed WITH c, REDUCE(s = '', part IN ou_parts_reversed | s + CASE WHEN s <> '' THEN ' / ' ELSE '' END + REPLACE(part,'OU=','')) AS ou_path RETURN COUNT(c) AS count, ou_path ORDER BY ou_path ASC;
+//Possible PreWin2k Computer Accounts
 MATCH (c:Computer {enabled:TRUE}) WHERE c.pwdlastset IS NOT NULL AND c.whencreated IS NOT NULL AND NOT c.pwdlastset IN [-1.0, 0.0] AND toInteger(c.pwdlastset) = toInteger(c.whencreated) RETURN c.name AS Computer, c.domain AS Domain, datetime({ epochSeconds: toInteger(c.whencreated) }) AS created_ts, datetime({ epochSeconds: toInteger(c.pwdlastset) }) AS pwdlastset_ts, c.objectid AS ObjectID ORDER BY created_ts DESC;
+//All OSes
+MATCH (c:Computer {enabled:TRUE}) RETURN c.operatingsystem, COUNT(c) as count ORDER BY count ASC
+MATCH (c:Computer {enabled:TRUE}) RETURN c.operatingsystemversion, COUNT(c) as count ORDER BY count ASC
+//Non-Windows OSes
+MATCH (c:Computer {enabled:TRUE}) WHERE NOT (toUpper(c.operatingsystem) STARTS WITH 'WINDOWS' OR toUpper(c.operatingsystem) STARTS WITH 'MAC') RETURN c.name, c.operatingsystem ORDER BY c.operatingsystem ASC
+//Unsupported Windows OSes
+MATCH (c:Computer {enabled:TRUE}) WHERE c.operatingsystem =~ '(?i).*(NT 3|NT 4|2000|ME|XP|2003|VISTA|Windows 7|Windows 8|2008|2012).*' RETURN c.operatingsystem, COUNT(c) ORDER BY c.operatingsystem DESC
+MATCH (c:Computer {enabled:TRUE}) WHERE c.operatingsystem =~ '(?i).*(NT 3|NT 4|2000|ME|XP|2003|VISTA|Windows 7|Windows 8|2008|2012).*' RETURN c.domain, c.operatingsystem, COUNT(c) ORDER BY c.domain DESC
 
 # Hunting Users
 MATCH (u:User {enabled:TRUE}) RETURN properties(u) LIMIT 1;
@@ -51,6 +51,14 @@ MATCH p=(u:User {enabled:TRUE, admincount:FALSE})-[r:AddAllowedToAct]->() RETURN
 # Hunting Groups
 MATCH (g:Group) RETURN properties(g) LIMIT 1;
 MATCH (n)-[r:MemberOf]->(g) WHERE g.samaccountname =~ '(?i).*(2000).*' RETURN n.name, type(r), g.name
+
+# Hunting Other Objects
+MATCH (g:GPO) RETURN properties(g) LIMIT 1;
+MATCH (g:GPO) RETURN g.name, g.gpcpath ORDER BY g.name
+MATCH (o:OU) RETURN properties(o) LIMIT 1;
+MATCH (o:OU) RETURN o.name, o.guid, o.description ORDER BY o.name
+MATCH (o:OU) RETURN count(o.name), o.name ORDER BY count(o.name) DESC
+MATCH (o:OU {blocksinheritance:TRUE}) RETURN o.name, o.guid, o.description ORDER BY o.name
 
 # Hunting Relationships
 MATCH p=(n {enabled:TRUE, admincount:FALSE})-[r:GenericAll]->() RETURN p
