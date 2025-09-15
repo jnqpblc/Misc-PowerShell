@@ -183,4 +183,11 @@ MATCH (u:GPO) WITH DISTINCT keys(u) AS keys UNWIND keys AS keyslisting WITH DIST
 "highvalue"
 "name"
 
-
+# Cleanup Data
+MATCH (n) DETACH DELETE n;
+//List constraints:
+SHOW CONSTRAINTS;
+DROP CONSTRAINT constraint_xxx;
+//List indexes:
+SHOW INDEXES;
+DROP INDEX index_xxx;
