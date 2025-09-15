@@ -35,6 +35,11 @@ MATCH (c:Computer {enabled:TRUE}) WHERE NOT (toUpper(c.operatingsystem) STARTS W
 //Unsupported Windows OSes
 MATCH (c:Computer {enabled:TRUE}) WHERE c.operatingsystem =~ '(?i).*(NT 3|NT 4|2000|ME|XP|2003|VISTA|Windows 7|Windows 8|2008|2012).*' RETURN c.operatingsystem, COUNT(c) ORDER BY c.operatingsystem DESC
 MATCH (c:Computer {enabled:TRUE}) WHERE c.operatingsystem =~ '(?i).*(NT 3|NT 4|2000|ME|XP|2003|VISTA|Windows 7|Windows 8|2008|2012).*' RETURN c.domain, c.operatingsystem, COUNT(c) ORDER BY c.domain DESC
+//Relationships
+MATCH (c:Computer {enabled:TRUE})-[r]->() RETURN COUNT(type(r)) as count, type(r) as relationship ORDER BY relationship
+MATCH p=(c:Computer {enabled:TRUE})-[r:GenericAll]->() RETURN p
+MATCH p=(c:Computer {enabled:TRUE})-[r:ReadGMSAPassword]->() RETURN p
+MATCH p=(c:Computer {enabled:TRUE})-[r:Owns]->() RETURN p
 
 # Hunting Users
 MATCH (u:User {enabled:TRUE}) RETURN properties(u) LIMIT 1;
@@ -63,9 +68,10 @@ MATCH (u:User {enabled:TRUE, pwdneverexpires:FALSE}) WHERE u.pwdlastset IS NOT N
 // whencreated == pwdlastset
 MATCH (u:User {enabled:TRUE}) WHERE u.pwdlastset IS NOT NULL AND u.whencreated IS NOT NULL AND NOT u.pwdlastset IN [-1.0, 0.0] AND toInteger(u.pwdlastset) = toInteger(u.whencreated) RETURN u.name AS User, u.domain AS Domain, datetime({ epochSeconds: toInteger(u.whencreated) }) AS created_ts, datetime({ epochSeconds: toInteger(u.pwdlastset) }) AS pwdlastset_ts, u.objectid AS ObjectID ORDER BY created_ts DESC;
 //Relationships
+MATCH (u:User {enabled:TRUE, admincount:FALSE})-[r]->() RETURN COUNT(type(r)) as count, type(r) as relationship ORDER BY relationship
 MATCH p=(u:User {enabled:TRUE, admincount:FALSE})-[r:GenericAll]->() RETURN p
+MATCH p=(u:User {enabled:TRUE, admincount:FALSE})-[r:AllExtendedRights]->() RETURN p
 MATCH p=(u:User {enabled:TRUE, admincount:FALSE})-[r:AddAllowedToAct]->() RETURN p
-
 
 # Hunting Groups
 MATCH (g:Group) RETURN properties(g) LIMIT 1;
