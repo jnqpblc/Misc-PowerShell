@@ -22,6 +22,9 @@ MATCH (c:Computer {enabled:TRUE}) WHERE NOT c.serviceprincipalnames=[] UNWIND c.
 MATCH (c:Computer {enabled:TRUE}) UNWIND c.serviceprincipalnames AS spn WITH spn, c WHERE spn =~ '(?i).*(piserver|nfs).*' RETURN c.name, c.displayname, collect(spn) AS matched_spns;
 MATCH (c:Computer {enabled:TRUE}) WHERE c.lastlogontimestamp < 1 RETURN c.name, datetime({ epochSeconds: toInteger(c.whencreated) }) AS created_ts, c.distinguishedname
 MATCH (c:Computer {enabled:TRUE}) WHERE c.distinguishedname IS NOT NULL WITH c, [part IN SPLIT(c.distinguishedname, ',') WHERE part STARTS WITH 'OU='] AS ou_parts WITH c, REVERSE(ou_parts) AS ou_parts_reversed WITH c, REDUCE(s = '', part IN ou_parts_reversed | s + CASE WHEN s <> '' THEN ' / ' ELSE '' END + REPLACE(part,'OU=','')) AS ou_path RETURN COUNT(c) AS count, ou_path ORDER BY ou_path ASC;
+// Calculate 3 months ago in Unix timestamp (approx. 90 days)
+WITH timestamp() / 1000 AS now_seconds, (timestamp() / 1000) - 90*24*60*60 AS cutoff
+MATCH (c:Computer {enabled:TRUE}) WHERE c.pwdlastset IS NOT NULL AND c.pwdlastset < cutoff RETURN c.name, c.operatingsystem, datetime({epochSeconds: toInteger(c.pwdlastset)}) as pwdlastset ORDER BY pwdlastset ASC;
 //Possible PreWin2k Computer Accounts
 MATCH (c:Computer {enabled:TRUE}) WHERE c.pwdlastset IS NOT NULL AND c.whencreated IS NOT NULL AND NOT c.pwdlastset IN [-1.0, 0.0] AND toInteger(c.pwdlastset) = toInteger(c.whencreated) RETURN c.name AS Computer, c.domain AS Domain, datetime({ epochSeconds: toInteger(c.whencreated) }) AS created_ts, datetime({ epochSeconds: toInteger(c.pwdlastset) }) AS pwdlastset_ts, c.objectid AS ObjectID ORDER BY created_ts DESC;
 //All OSes
