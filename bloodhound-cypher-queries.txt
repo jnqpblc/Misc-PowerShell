@@ -52,7 +52,7 @@ MATCH (u:User {enabled:TRUE, trustedtoauth:TRUE}) RETURN u.name, u.displayname, 
 MATCH (u:User {enabled:TRUE, hasspn:TRUE}) RETURN u.name, u.displayname, u.title, u.description
 MATCH (u:User {enabled:TRUE}) WHERE NOT u.sidhistory=[] RETURN u.name, u.displayname, u.description
 MATCH (u:User {enabled:TRUE, hasspn:TRUE}) WHERE NOT u.serviceprincipalnames=[] UNWIND u.serviceprincipalnames AS spn WITH spn, u RETURN SPLIT(spn, "/")[0] AS spn_type, COUNT(DISTINCT u.name) AS count ORDER BY count ASC;
-MATCH (u:User{enabled:TRUE}) UNWIND u.serviceprincipalnames AS spn WITH spn, u WHERE spn =~ '(?i).*(MSSQLSvc|HTTP).*' RETURN u.name, u.displayname, collect(spn) AS matched_spns;
+MATCH (u:User {enabled:TRUE}) UNWIND u.serviceprincipalnames AS spn WITH spn, u WHERE spn =~ '(?i).*(MSSQLSvc|HTTP).*' RETURN u.name, u.displayname, collect(spn) AS matched_spns;
 MATCH (u:User {enabled:TRUE}) WHERE u.lastlogontimestamp < 1 RETURN u.name, datetime({ epochSeconds: toInteger(u.whencreated) }) AS created_ts, u.distinguishedname
 MATCH (u:User {enabled:TRUE}) WHERE u.distinguishedname IS NOT NULL WITH u, [part IN SPLIT(u.distinguishedname, ',') WHERE part STARTS WITH 'OU='] AS ou_parts WITH u, REVERSE(ou_parts) AS ou_parts_reversed WITH u, REDUCE(s = '', part IN ou_parts_reversed | s + CASE WHEN s <> '' THEN ' / ' ELSE '' END + REPLACE(part,'OU=','')) AS ou_path RETURN COUNT(u) AS count, ou_path ORDER BY ou_path ASC;
 MATCH (u:User {enabled:TRUE}) WHERE u.title IS NOT NULL RETURN count(u) as count, u.title ORDER BY count ASC
